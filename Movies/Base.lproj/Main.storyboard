@@ -42,7 +42,7 @@
                                 </collectionViewCellContentView>
                                 <color key="backgroundColor" systemColor="systemGreenColor" red="0.20392156859999999" green="0.78039215689999997" blue="0.34901960780000002" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                 <connections>
-                                    <outlet property="imageView" destination="qVK-Ox-6ak" id="Woc-b2-Vwp"/>
+                                    <outlet property="imageView" destination="qVK-Ox-6ak" id="iVx-dR-fva"/>
                                 </connections>
                             </collectionViewCell>
                         </cells>
@@ -55,7 +55,7 @@
                 </collectionViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="FHK-89-dcU" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="913.04347826086962" y="-80.357142857142847"/>
+            <point key="canvasLocation" x="848" y="-80"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="pDA-LC-7CL">

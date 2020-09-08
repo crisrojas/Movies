@@ -7,11 +7,12 @@
 //
 
 import UIKit
+import Kingfisher
 
-private let reuseIdentifier = "Cell"
+private let reuseIdentifier = "MoviesCell"
 
 final class MoviesCollectionViewController: UICollectionViewController {
-    
+
     let movies = Movies(
         results: [
             Movie(
@@ -78,7 +79,6 @@ final class MoviesCollectionViewController: UICollectionViewController {
     )
     
     private let itemsPerRow : CGFloat = 2
-    private let reuseIdentifier = "MoviesCell"
     private let sectionInsets = UIEdgeInsets(top: 50.0,
     left: 20.0,
     bottom: 50.0,
@@ -91,7 +91,7 @@ final class MoviesCollectionViewController: UICollectionViewController {
         // self.clearsSelectionOnViewWillAppear = false
 
         // Register cell classes
-        self.collectionView!.register(UICollectionViewCell.self, forCellWithReuseIdentifier: reuseIdentifier)
+        //self.collectionView!.register(MoviesCell.self, forCellWithReuseIdentifier: reuseIdentifier)
 
         // Do any additional setup after loading the view.
     }
@@ -125,11 +125,13 @@ extension MoviesCollectionViewController {
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         ///todo: Return cell as MovieCell
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath)
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! MoviesCell
     
-        cell.backgroundColor = .black // Configure the cell
-        ///todo: set image
-        // cell.imageView.image = Show image
+        //cell.backgroundColor = .black // Configure the cell
+        guard let urlString = self.movies.results[indexPath.row].poster else { return cell }
+        let url = URL(string: urlString)
+        cell.imageView.kf.setImage(with: url)
+
 
         return cell
     }
