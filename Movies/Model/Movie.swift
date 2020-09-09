@@ -9,6 +9,7 @@
 import Foundation
 
 struct Movie: Codable {
+    
     let id: Int
     let posterPath : String?
     let title: String
@@ -17,4 +18,5 @@ struct Movie: Codable {
         guard let posterPath = posterPath else { return nil }
         return "https://image.tmdb.org/t/p/w500\(posterPath)"
     }
+    var cast : [Actor]?
 }

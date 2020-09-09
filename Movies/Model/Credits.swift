@@ -9,5 +9,7 @@
 import Foundation
 
 struct Credits: Codable {
+    
     let cast: [Actor]
 }
+

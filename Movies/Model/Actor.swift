@@ -9,6 +9,7 @@
 import Foundation
 
 struct Actor: Codable {
+    
     let name: String
     let profilePath: String?
 }

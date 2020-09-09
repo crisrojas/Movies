@@ -16,7 +16,7 @@ struct MoviesViewModel {
     let url = "https://api.themoviedb.org/3/movie/now_playing?api_key=b5f1e193c3a2759a19f3f085f3dc2d7e"
     
     init() {
-        moviesManager.delegate = self
+        //moviesManager.delegate = self
     }
     
     func fetch() {
@@ -37,9 +37,10 @@ struct MoviesViewModel {
 }
 
 
-extension MoviesViewModel: MoviesManagerDelegate {
+/*extension MoviesViewModel: MoviesManagerDelegate {
      func didDownloadMovies(movies: Movies) {
        //
     }
     
 }
+*/
