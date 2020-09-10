@@ -13,8 +13,15 @@ private let reuseIdentifier = "MoviesCell"
 
 final class MoviesCollectionViewController: UICollectionViewController {
     
-    var model = Movies(results: [Movie]())
-    var moviesManager = MoviesManager()
+    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+    
+    private lazy var viewModel: MoviesViewModelInput = {
+        var moviesRepository = MoviesRepository()
+        let viewModel = MoviesViewModel(moviesRepository: moviesRepository)
+        moviesRepository.output = viewModel
+        viewModel.view = self
+        return viewModel
+    }()
     
     private let itemsPerRow : CGFloat = 2
     private let sectionInsets = UIEdgeInsets(
@@ -26,22 +33,32 @@ final class MoviesCollectionViewController: UICollectionViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        moviesManager.delegate = self
-        moviesManager.fetchMovies()
         
+        viewModel.fetchMovies()
     }
-
 }
 
-// MARK: MoviesManagerDelegate
+// MARK: MoviesView
 
-extension MoviesCollectionViewController: MoviesManagerDelegate {
+extension MoviesCollectionViewController: MoviesView {
     
-    func didDownloadMovies(movies: Movies) {
-        model = movies
-        collectionView.reloadData()
+    func didUpdate(state: MoviesViewModelState) {
+        if state.isLoading {
+            activityIndicator.startAnimating()
+        } else {
+            activityIndicator.stopAnimating()
+        }
+        switch state {
+        case .success:
+            collectionView.reloadData()
+        case .error:
+            break
+        default:
+            break
+        }
     }
 }
+
 
 // MARK: UICollectionViewDataSource
 
@@ -56,14 +73,14 @@ extension MoviesCollectionViewController {
 
     override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of items
-        return model.results.count
+        return viewModel.model.results.count
     }
 
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        ///todo: Return cell as MovieCell
+        
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: reuseIdentifier, for: indexPath) as! MoviesCell
     
-        guard let urlString = self.model.results[indexPath.row].poster else { return cell }
+        guard let urlString = viewModel.model.results[indexPath.row].poster else { return cell }
         let url = URL(string: urlString)
         cell.imageView.kf.setImage(with: url)
 
@@ -72,7 +89,7 @@ extension MoviesCollectionViewController {
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let vc = storyboard?.instantiateViewController(withIdentifier: "MoviesDetailViewController") as? MoviesDetailViewController
-        vc?.movie = self.model.results[indexPath.row]
+        vc?.movie = viewModel.model.results[indexPath.row]
         self.navigationController?.pushViewController(vc!, animated: true)
     }
 
@@ -91,7 +108,7 @@ extension MoviesCollectionViewController: UICollectionViewDelegateFlowLayout {
       let availableWidth = view.frame.width - paddingSpace
       let widthPerItem = availableWidth / itemsPerRow
       
-      return CGSize(width: widthPerItem, height: widthPerItem)
+        return CGSize(width: widthPerItem, height: widthPerItem * 1.4)
     }
     
     
