@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="16097.3" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="zuJ-vg-PCZ">
-    <device id="retina6_1" orientation="portrait" appearance="light"/>
+    <device id="retina6_1" orientation="landscape" appearance="light"/>
     <dependencies>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="16087"/>
         <capability name="collection view cell content view" minToolsVersion="11.0"/>
@@ -12,7 +12,7 @@
             <objects>
                 <collectionViewController storyboardIdentifier="MoviesListVC" useStoryboardIdentifierAsRestorationIdentifier="YES" id="zuJ-vg-PCZ" customClass="MoviesCollectionViewController" customModule="Movies" customModuleProvider="target" sceneMemberID="viewController">
                     <collectionView key="view" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" id="jJL-pI-QE4">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
+                        <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="2mQ-Vd-mA5">
@@ -22,12 +22,12 @@
                             <inset key="sectionInset" minX="0.0" minY="0.0" maxX="0.0" maxY="0.0"/>
                         </collectionViewFlowLayout>
                         <activityIndicatorView key="backgroundView" opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" hidesWhenStopped="YES" animating="YES" style="medium" id="cgm-Gn-NCN">
-                            <rect key="frame" x="0.0" y="-44" width="414" height="896"/>
+                            <rect key="frame" x="0.0" y="0.0" width="896" height="414"/>
                             <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                         </activityIndicatorView>
                         <cells>
                             <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="MoviesCell" id="qDx-6U-oI4" customClass="MoviesCell" customModule="Movies" customModuleProvider="target">
-                                <rect key="frame" x="102" y="0.0" width="210" height="297"/>
+                                <rect key="frame" x="0.0" y="0.0" width="210" height="297"/>
                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                 <collectionViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="PAB-Wt-j16">
                                     <rect key="frame" x="0.0" y="0.0" width="210" height="297"/>
@@ -38,7 +38,9 @@
                                         </imageView>
                                     </subviews>
                                     <constraints>
-                                        <constraint firstAttribute="trailing" secondItem="BmG-ng-RA7" secondAttribute="trailing" id="Nv2-pg-DaM"/>
+                                        <constraint firstAttribute="trailing" secondItem="BmG-ng-RA7" secondAttribute="trailing" id="Nv2-pg-DaM">
+                                            <variation key="heightClass=compact" constant="0.0"/>
+                                        </constraint>
                                         <constraint firstAttribute="bottom" secondItem="BmG-ng-RA7" secondAttribute="bottom" id="bNS-af-YXN"/>
                                         <constraint firstItem="BmG-ng-RA7" firstAttribute="leading" secondItem="PAB-Wt-j16" secondAttribute="leading" id="h9J-dG-UJl"/>
                                         <constraint firstItem="BmG-ng-RA7" firstAttribute="top" secondItem="PAB-Wt-j16" secondAttribute="top" id="tCW-3c-dcp"/>

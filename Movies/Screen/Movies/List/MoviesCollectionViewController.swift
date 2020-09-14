@@ -11,6 +11,7 @@ import UIKit
 
 private let reuseIdentifier = "MoviesCell"
 
+//todo: fix bug, cells gets larger an take all the screen when going to landscape mode and then returning back to portrait mode
 final class MoviesCollectionViewController: UICollectionViewController {
     
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!

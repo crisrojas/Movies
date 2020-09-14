@@ -24,7 +24,7 @@ class MoviesViewModel: MoviesViewModelInput {
     private(set) var model = Movies(results: [Movie]())
     weak var view: MoviesView?
     
-    init(moviesRepository: MoviesRepositoryInput) {
+    init(moviesRepository: MoviesRepositoryInput = MoviesRepository()) {
         self.moviesRepository = moviesRepository
     }
     
