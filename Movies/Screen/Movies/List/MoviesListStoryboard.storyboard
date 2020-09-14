@@ -10,7 +10,7 @@
         <!--Movies Collection View Controller-->
         <scene sceneID="Nt3-BI-4ZQ">
             <objects>
-                <collectionViewController storyboardIdentifier="MoviesList" useStoryboardIdentifierAsRestorationIdentifier="YES" id="zuJ-vg-PCZ" customClass="MoviesCollectionViewController" customModule="Movies" customModuleProvider="target" sceneMemberID="viewController">
+                <collectionViewController storyboardIdentifier="MoviesListVC" useStoryboardIdentifierAsRestorationIdentifier="YES" id="zuJ-vg-PCZ" customClass="MoviesCollectionViewController" customModule="Movies" customModuleProvider="target" sceneMemberID="viewController">
                     <collectionView key="view" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" id="jJL-pI-QE4">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
@@ -57,11 +57,22 @@
                     <navigationItem key="navigationItem" id="CkL-zE-Mes"/>
                     <connections>
                         <outlet property="activityIndicator" destination="cgm-Gn-NCN" id="RS1-gH-Orp"/>
+                        <segue destination="EwK-Li-HbU" kind="show" id="Opj-IM-Uxc"/>
                     </connections>
                 </collectionViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="KYG-MY-J9i" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="575" y="40"/>
+        </scene>
+        <!--MoviesDetailVC-->
+        <scene sceneID="8hV-xC-nV5">
+            <objects>
+                <viewControllerPlaceholder storyboardName="MoviesDetailStoryboard" referencedIdentifier="MoviesDetailVC" id="EwK-Li-HbU" sceneMemberID="viewController">
+                    <navigationItem key="navigationItem" id="T0x-D0-5Nl"/>
+                </viewControllerPlaceholder>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="Ioo-5W-MjX" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1286" y="-49"/>
         </scene>
     </scenes>
 </document>

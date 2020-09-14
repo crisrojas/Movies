@@ -88,7 +88,8 @@ extension MoviesCollectionViewController {
     }
     
     override func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let vc = storyboard?.instantiateViewController(withIdentifier: "MoviesDetailViewController") as? MoviesDetailViewController
+        let storyBoard = UIStoryboard(name: "MoviesDetailStoryboard", bundle: nil)
+        let vc = storyBoard.instantiateViewController(withIdentifier: "MoviesDetailVC") as? MoviesDetailViewController
         vc?.movie = viewModel.model.results[indexPath.row]
         self.navigationController?.pushViewController(vc!, animated: true)
     }

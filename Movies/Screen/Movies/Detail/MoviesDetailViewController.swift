@@ -81,18 +81,20 @@ extension MoviesDetailViewController: UICollectionViewDataSource, UICollectionVi
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell", for: indexPath) as! CastCell
-        guard let urlString = viewModel.model.cast[indexPath.row].profilePicture else { return cell }
         
+        //todo: abstract to class setCell()
         cell.imageView.layer.cornerRadius = cell.imageView.frame.size.width / 2
         cell.imageView.clipsToBounds = true
-        cell.imageView.layer.borderColor = UIColor.black.cgColor
-        cell.imageView.layer.borderWidth = 4
+        cell.imageView.image = UIImage(named: "Placeholder avatar")!
         
-        if let url = URL(string: urlString) {
-             cell.imageView.kf.setImage(with: url)
+        if let urlString = viewModel.model.cast[indexPath.row].profilePicture {
+            let url = URL(string: urlString)
+            cell.imageView.kf.setImage(with: url)
         } else {
             cell.imageView.image = UIImage(named: "Placeholder avatar")!
+            return cell
         }
+    
         return cell
     }
 }

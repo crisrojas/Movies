@@ -10,4 +10,10 @@ import UIKit
 
 class CastCell: UICollectionViewCell {
     @IBOutlet weak var imageView: UIImageView!
+    
+    // Cast cell es creado antes del init()
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        
+    }
 }
