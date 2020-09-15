@@ -9,6 +9,12 @@
 import Kingfisher
 import UIKit
 
+
+protocol MoviesDetailView: class {
+    
+    func didUpdate(state: MoviesDetailViewModelState)
+}
+
 class MoviesDetailViewController: UIViewController {
     
     @IBOutlet weak var movieTitle: UILabel!

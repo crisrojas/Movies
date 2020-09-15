@@ -7,17 +7,3 @@
 //
 
 import Foundation
-
-protocol MoviesDetailView: class {
-    
-    func didUpdate(state: MoviesDetailViewModelState)
-}
-
-protocol MoviesDetailViewModelInput {
-    
-    var view: MoviesDetailView? { get set }
-    var model: Credits { get }
-    
-    func fetchCredits(movieId: Int)
-    
-}

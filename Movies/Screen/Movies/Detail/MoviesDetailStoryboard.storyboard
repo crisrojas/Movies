@@ -32,7 +32,7 @@
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
-                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="OXI-I8-eGq">
+                                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ellipsis" adjustsImageSizeForAccessibilityContentSizeCategory="YES" translatesAutoresizingMaskIntoConstraints="NO" id="OXI-I8-eGq">
                                                 <rect key="frame" x="0.0" y="53" width="414" height="585.5"/>
                                                 <constraints>
                                                     <constraint firstAttribute="width" secondItem="OXI-I8-eGq" secondAttribute="height" multiplier="210:297" id="0Zq-QJ-WcI"/>
@@ -142,4 +142,7 @@
             <point key="canvasLocation" x="1608.6956521739132" y="62.946428571428569"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="ellipsis" width="128" height="128"/>
+    </resources>
 </document>

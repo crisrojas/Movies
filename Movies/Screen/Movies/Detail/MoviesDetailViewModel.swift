@@ -16,6 +16,16 @@ enum MoviesDetailViewModelState {
     }
 }
 
+protocol MoviesDetailViewModelInput {
+    
+    var view: MoviesDetailView? { get set }
+    var model: Credits { get }
+    
+    func fetchCredits(movieId: Int)
+    
+}
+
+
 
 class MoviesDetailViewModel: MoviesDetailViewModelInput {
     

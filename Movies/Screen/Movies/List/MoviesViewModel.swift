@@ -30,7 +30,7 @@ class MoviesViewModel: MoviesViewModelInput {
     
     func fetchMovies() {
         view?.didUpdate(state: .loading)
-        self.moviesRepository.fetchMovies()
+        moviesRepository.fetchMovies()
     }
     
 }
