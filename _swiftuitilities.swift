@@ -37,6 +37,10 @@ extension View {
     
     
     // frame
+    func size(_ value: CGFloat) -> some View {
+        self.frame(width: value, height: value)
+    }
+    
     func width(_ value: CGFloat) -> some View {
         self.frame(width: value)
     }

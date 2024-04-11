@@ -566,7 +566,9 @@ public extension CGFloat {
     static let s12: Self = base * 12
     static let s14: Self = base * 14
     static let s16: Self = base * 16
+    static let s18: Self = base * 18
     static let s20: Self = base * 20
+    static let s22: Self = base * 22
     static let s24: Self = base * 24
     static let s28: Self = base * 28
     static let s32: Self = base * 32

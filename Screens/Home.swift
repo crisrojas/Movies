@@ -25,7 +25,6 @@ struct Home: View {
         }
         .scrollify()
         .background(DefaultBackground())
-        .navigationify()
     }
     
     @ViewBuilder

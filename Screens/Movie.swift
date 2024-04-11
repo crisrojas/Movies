@@ -8,7 +8,6 @@
 import SwiftUI
 
 /* @todo:
- - Tabs
  - Fetch videos
  - Persistence
  - Dark mode
