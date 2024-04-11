@@ -9,7 +9,6 @@ import SwiftUI
 
 /* @todo:
  - Cards aspect ratio
- - Infinite scroll
  - Back button (color & hide label)
  - Tabs
  - Fetch videos

@@ -71,6 +71,15 @@ extension NetworkGetter {
             
         }.resume()
     }
+    
+//    func fetchData(url: String, completion: @escaping Completion<MJ>) {
+//        fetchData(url: url) { result in
+//            switch result {
+//            case .success(let data): completion(.success(MJ(data: data)))
+//            case .failure(let error): completion(.failure(error))
+//            }
+//        }
+//    }
 }
 
 import SwiftUI
@@ -79,7 +88,41 @@ enum ResourceState {
     case loading
     case success(MJ)
     case error(String)
-    case empty
+//    case empty
+}
+
+extension ResourceState {
+    var isSuccess: Bool {
+        switch self {
+        case .success: return true
+        default: return false
+        }
+    }
+    
+    var data: MJ? {
+        switch self {
+        case .success(let data): return data
+        default: return nil
+        }
+    }
+    
+    mutating func appendData(_ newData: MJ, keyPath: String) {
+        guard let data else { return }
+        let finalData = data[keyPath].array + newData[keyPath].array
+        let anyArray: [Any] = finalData.map { $0.jsonObject }
+        let jsonObject: [String: Any] = [keyPath: anyArray]
+        let magicJSON = MagicJSON.dict(jsonObject)
+        self = .success(magicJSON)
+    }
+}
+
+extension ResourceState {
+    init(from result: Result<MJ, Error>) {
+        switch result {
+        case .success(let data): self = .success(data)
+        case .failure(let error): self = .error(error.localizedDescription)
+        }
+    }
 }
 
 struct JSON<T: View>: View, NetworkGetter {
@@ -99,7 +142,7 @@ struct JSON<T: View>: View, NetworkGetter {
         case .loading: ProgressView().onAppear(perform: fetchData)
         case .success(let data): closure(result(data))
         case .error(let error): Text(error)
-        case .empty: "No data found"
+//        case .empty: "No data found"
         }
     }
     

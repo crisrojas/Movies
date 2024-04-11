@@ -13,7 +13,7 @@ extension Collection {
 
 extension String {
     var backdropURL: URL? {
-        return URL(string: "https://image.tmdb.org/t/p/w500\(self)")!
+        return URL(string: "https://image.tmdb.org/t/p/w500\(self)")
     }
 }
 
