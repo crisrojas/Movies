@@ -66,7 +66,7 @@ struct Home: View {
         title("Now playing")
         JSON(url: TmdbApi.now_playing) { items in
             TwoColumnsGrid.from(items) { item in
-                backdrop(path: item.backdrop_path)
+                poster(path: item.poster_path)
                     .onTap(navigateTo: Movie(props: item))
             }
         }
@@ -84,17 +84,18 @@ struct Home: View {
 
 private extension Home {
     
-    func backdrop(path: String) -> some View {
+    func poster(path: String) -> some View {
         
-        AsyncImage(url: path.backdropURL) { image in
+        AsyncImage(url: path.movieImageURL) { image in
             image
                 .resizable()
                 .frame(maxWidth: .infinity)
-                .aspectRatio(210/297, contentMode: .fill)
-                .cornerRadius(10)
+                .aspectRatio(210/297, contentMode: .fit)
+                
         } placeholder: {
             gridImagePlaceholder
         }
+        .cornerRadius(.s3)
     }
     
     
@@ -102,7 +103,6 @@ private extension Home {
         Color.neutral300
             .frame(maxWidth: .infinity)
             .aspectRatio(210/297, contentMode: .fill)
-            .cornerRadius(10)
             .overlay(ProgressView())
     }
     

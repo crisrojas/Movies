@@ -8,7 +8,6 @@
 import SwiftUI
 
 /* @todo:
- - Cards aspect ratio
  - Tabs
  - Fetch videos
  - Persistence
@@ -29,7 +28,7 @@ struct Movie: View {
     }
     
     var background: Background {
-        Background(url: props.backdrop_path.backdropURL)
+        Background(url: props.backdrop_path.movieImageURL)
     }
     
     func castSection() -> some View {
@@ -101,7 +100,7 @@ extension Movie.Header {
     init(props: MJ) {
         title = props.title
         voteAverage = props.vote_average.doubleValue
-        posterURL = props.backdrop_path.backdropURL
+        posterURL = props.poster_path.movieImageURL
         trailerURL = props.trailerURL.url
     }
 }

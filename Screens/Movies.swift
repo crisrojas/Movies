@@ -117,7 +117,7 @@ extension Movies {
 extension Movies.Cell {
     init(props: MJ)  {
         title = props.title
-        backdropURL = props.backdrop_path.backdropURL
+        backdropURL = props.backdrop_path.movieImageURL
         overview = props.overview
     }
 }

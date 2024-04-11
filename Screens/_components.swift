@@ -15,7 +15,7 @@ struct Card: View {
     
     var body: some View {
         
-        AsyncImage(url: image?.backdropURL) { image in
+        AsyncImage(url: image?.movieImageURL) { image in
             image
                 .resizable()
                 .width(350)
