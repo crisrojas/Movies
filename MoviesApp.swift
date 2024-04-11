@@ -1,4 +1,9 @@
 import SwiftUI
+import SafariServices
+
+final class GlobalStates: ObservableObject {
+    @Published var videoURL: URL?
+}
 
 @main
 struct MoviesApp: App {
@@ -52,6 +57,8 @@ enum Tab: String, CaseIterable {
 }
 
 struct Tabbar: View {
+    
+    @StateObject var globalStates = states
     @State var selected: Tab = .home
     
     var body: some View {
@@ -66,7 +73,8 @@ struct Tabbar: View {
         TabView(selection: $selected) {
             
             ForEach(Tab.allCases, id: \.self) { tab in
-                tab.screen.navigationify()
+                tab.screen
+                    .navigationify()
                     .tabItem {
                         Label(tab.rawValue, systemImage: tab.systemName)
                     }
@@ -84,8 +92,17 @@ struct Tabbar: View {
                     if tab != .centralButton {
                         defaultItem(tab)
                     } else {
-                        CentralButton(tab: tab)
-                            .onTap { selected = tab }
+                        CentralButton(
+                            tab: tab,
+                            videoURL: globalStates.videoURL
+                        )
+                        .onTap {
+                            if let videoURL = globalStates.videoURL {
+                                presentVideo(url: videoURL)
+                            } else {
+                                selected = tab
+                            }
+                        }
                     }
                     
                     Spacer()
@@ -109,6 +126,13 @@ struct Tabbar: View {
             }
     }
     
+    func presentVideo(url: URL) {
+        
+        let safariViewController = SFSafariViewController(url: url)
+        UIApplication.shared.windows.first?.rootViewController?.present(safariViewController, animated: true, completion: nil)
+        
+    }
+    
     var safeAreaInsetsBottom: CGFloat {
         guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else {
             return 0
@@ -121,11 +145,20 @@ struct Tabbar: View {
 extension Tabbar {
     struct CentralButton: View {
         let tab: Tab
+        let videoURL: URL?
+        
+        var symbolName: String {
+            videoURL == nil ? tab.systemName : "play"
+        }
+        
+        var color: Color {
+            videoURL == nil ? .teal400 : .orange400
+        }
         var body: some View {
             Circle()
                 .size(.s16)
-                .foregroundColor(.teal400)
-                .shadow(color: .teal400.opacity(0.5), radius: 10)
+                .foregroundColor(color)
+                .shadow(color: color.opacity(0.5), radius: 10)
                 .overlay(symbol)
                 .background(
                     Circle()
@@ -133,10 +166,11 @@ extension Tabbar {
                         .size(.s20)
                 )
                 .offset(y: -.s3h)
+                .animation(.linear, value: videoURL == nil)
         }
         
         var symbol: some View {
-            Image(systemName: tab.systemName)
+            Image(systemName: symbolName)
                 .modify {
                     if #available(iOS 16.0, *) {
                         $0.fontWeight(.bold)

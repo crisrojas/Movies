@@ -148,9 +148,11 @@ struct JSON<T: View>: View, NetworkGetter {
     
     private func fetchData() {
         fetchData(url: url.absoluteString) { result in
-            switch result {
-            case .success(let data): state = .success(MJ(data: data))
-            case .failure(let error): state = .error(error.localizedDescription)
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let data): state = .success(MJ(data: data))
+                case .failure(let error): state = .error(error.localizedDescription)
+                }
             }
         }
     }

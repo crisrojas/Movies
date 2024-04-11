@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct Home: View {
-    
+   
     var body: some View {
         VStack(spacing: 0) {
             "Hello Clark".body

@@ -8,11 +8,14 @@
 import SwiftUI
 
 /* @todo:
- - Fetch videos
  - Persistence
  - Dark mode
+ 
+// @todo: inject global state through environmentObject...
  */
-struct Movie: View {
+let states = GlobalStates()
+struct Movie: View, NetworkGetter {
+    @StateObject var globals = states
     let props: MJ
     var body: some View {
         VStack {
@@ -24,6 +27,22 @@ struct Movie: View {
         .horizontal(.s6)
         .scrollify()
         .background(background.fullScreen())
+        .onAppear(perform: getTrailerURL)
+        .onDisappear(perform: { globals.videoURL = nil })
+    }
+    
+    func getTrailerURL() {
+        fetchData(url: TmdbApi.videos(id: props.id.intValue).absoluteString) { result in
+            switch result {
+            case .success(let data):
+                let item = MJ(data: data).results.array.first
+                guard let key = item?.key.stringValue else { return }
+                DispatchQueue.main.async {
+                    globals.videoURL = URL(string: "https://youtube.com/\(key)")
+                }
+            case .failure(_): break
+            }
+        }
     }
     
     var background: Background {
