@@ -6,13 +6,7 @@
 //
 
 import SwiftUI
-/* @todo:
-- Persistence:
-    - favorite list
-    - rating list
-- Tips
-// @todo: inject global state through environmentObject...
- */
+
 struct Movie: View, NetworkGetter {
     @StateObject var globals = states
     @StateObject var favorites = FileBase.favorites
@@ -71,8 +65,6 @@ struct Movie: View, NetworkGetter {
     }
 }
 
-
-
 // MARK: - Header
 extension Movie {
     struct Header: View {
@@ -82,7 +74,7 @@ extension Movie {
         let posterURL: URL?
         let trailerURL: URL?
         var isFavorite: Bool = false
-        var toggleFavorite: (() -> Void)?
+        var toggleFavorite: () -> Void = {}
         @Environment(\.theme) var theme: Theme
         
         var ratingStars: String { voteAverage.makeRatingStars() }
@@ -119,7 +111,7 @@ extension Movie {
         var actions: some View {
             VStack(spacing: .s4) {
                 Image(systemName: "heart.fill").opacity(isFavorite ? 1 : 0.3).onTap {
-                    toggleFavorite?()
+                    toggleFavorite()
                 }
                 .foregroundColor(isFavorite ? .red600 : theme.textPrimary)
                 .animation(.easeInOut, value: isFavorite)
@@ -155,7 +147,6 @@ extension Movie.Header {
         posterURL = props.poster_path.movieImageURL
         trailerURL = props.trailerURL.url
         isFavorite = false
-        toggleFavorite = {}
     }
 }
 
@@ -324,7 +315,6 @@ extension Movie {
 
 }
 
-
 // MARK: - Background
 extension Movie {
     struct Background: View {
@@ -340,7 +330,7 @@ extension Movie {
                     .saturation(0.0)
                     .clipped()
                     .edgesIgnoringSafeArea(.top)
-                    .overlay(DefaultBackground())
+                    .overlay(DefaultBackground().opacity(0.5))
                     .overlay(WhiteGradient())
             } placeholder: {
                 DefaultBackground().fullScreen()

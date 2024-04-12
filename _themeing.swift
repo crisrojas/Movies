@@ -73,7 +73,7 @@ struct Theme: Equatable {
     var gradientSecond: Color = .teal50
     
     var gradient: Gradient {
-        .init(colors: [gradientFirst, gradientSecond])
+        .init(colors: [gradientFirst.opacity(0.7), gradientSecond])
     }
     
     var secondGradient: Gradient {
@@ -81,7 +81,7 @@ struct Theme: Equatable {
     }
     
     static let light = Theme()
-    static let dark = Theme() << {
+    static let dark = Theme() * {
         $0.accent = .white
         $0.textPrimary = .white
         $0.tabbarBg = .black

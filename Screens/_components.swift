@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct Card: View {
-    
     let image: String?
     let title: String?
     let genres: String?
@@ -41,7 +40,6 @@ struct Card: View {
         ]
     )
 }
-
 
 private extension Card {
     
@@ -128,7 +126,6 @@ enum TwoColumnsGrid {
 }
 
 struct GenreButton: View {
-    
     let model: FeaturedGenre
     
     var body: some View {

@@ -107,3 +107,29 @@ extension View {
     }
 }
 
+extension View {
+    @ViewBuilder
+    func modify(@ViewBuilder _ transform: (Self) -> (some View)) -> some View {
+        transform(self)
+    }
+    
+    
+    
+    @ViewBuilder
+    func `if`(_ condition: Bool, transform: (Self) -> some View) -> some View {
+        if condition {
+            transform(self)
+        } else {
+            self
+        }
+    }
+    
+    @ViewBuilder
+    func ifLet<T>(_ variable: T?, transform: (Self, T) -> some View) -> some View {
+        if let variable {
+            transform(self, variable)
+        } else {
+            self
+        }
+    }
+}

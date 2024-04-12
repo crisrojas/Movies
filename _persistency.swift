@@ -7,18 +7,25 @@
 
 import Foundation
 
+
+enum FileBase {
+    static let favorites = FileResource("favorites")
+    static let ratings   = FileResource("ratings")
+}
+
+
 final class FileResource: ObservableObject {
     @Published var data = MJ.arr([]) {
         didSet { persist() }
     }
+    
+    var items: [MJ] {data.array}
     
     let path: String
     init(_ path: String) {
         self.path = path + ".txt"
         data = read()
     }
-    
-    fileprivate let jsonDecoder = JSONDecoder()
     
     func contains(_ itemId: String) -> Bool {read(id: itemId) != nil}
    
@@ -58,6 +65,8 @@ final class FileResource: ObservableObject {
             print("Error writing file: \(error)")
         }
     }
+    
+    func destroy() { }
     
     
     func fileURL() throws -> URL {
