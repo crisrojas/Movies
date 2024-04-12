@@ -6,20 +6,24 @@
 //
 
 import SwiftUI
-
 /* @todo:
- - Persistence
- 
+- Persistence:
+    - favorite list
+    - rating list
+- Tips
 // @todo: inject global state through environmentObject...
  */
-let states = GlobalStates()
-
 struct Movie: View, NetworkGetter {
     @StateObject var globals = states
+    @StateObject var favorites = FileBase.favorites
+    
     let props: MJ
     var body: some View {
         VStack {
-            Header(props: props)
+            Header(props: props) * {
+                $0.isFavorite = favorites.contains(props.id)
+                $0.toggleFavorite = toggleFavorite
+            }
             InfoStack(props: props).top(.s5)
             StoryLine(props: props)
             castSection().vertical(.s6)
@@ -29,6 +33,15 @@ struct Movie: View, NetworkGetter {
         .background(background.fullScreen())
         .onAppear(perform: getTrailerURL)
         .onDisappear(perform: { globals.videoURL = nil })
+    }
+    
+    
+    func toggleFavorite() {
+        if favorites.contains(props.id) {
+            favorites.delete(props)
+        } else {
+            favorites.add(props)
+        }
     }
     
     func getTrailerURL() {
@@ -58,14 +71,18 @@ struct Movie: View, NetworkGetter {
     }
 }
 
+
+
 // MARK: - Header
 extension Movie {
     struct Header: View {
+        let id: Int
         let title: String
         let voteAverage: Double
         let posterURL: URL?
         let trailerURL: URL?
-        
+        var isFavorite: Bool = false
+        var toggleFavorite: (() -> Void)?
         @Environment(\.theme) var theme: Theme
         
         var ratingStars: String { voteAverage.makeRatingStars() }
@@ -79,6 +96,7 @@ extension Movie {
             VStack(spacing: 0) {
                 
                 posterView
+                    .overlay(actions, alignment: .trailing)
                 
                 Text(title)
                     .fixedSize(horizontal: false, vertical: true)
@@ -96,6 +114,19 @@ extension Movie {
                     .foregroundColor(Color.orange)
                     .top(10)
             }
+        }
+        
+        var actions: some View {
+            VStack(spacing: .s4) {
+                Image(systemName: "heart.fill").opacity(isFavorite ? 1 : 0.3).onTap {
+                    toggleFavorite?()
+                }
+                .foregroundColor(isFavorite ? .red600 : theme.textPrimary)
+                .animation(.easeInOut, value: isFavorite)
+                Image(systemName: "star.fill").opacity(0.3).onTap { }
+            }
+            .foregroundColor(theme.textPrimary)
+            .offset(x: .s12)
         }
     }
 }
@@ -118,10 +149,13 @@ private extension Movie.Header {
 
 extension Movie.Header {
     init(props: MJ) {
+        id = props.id.intValue
         title = props.title
         voteAverage = props.vote_average.doubleValue
         posterURL = props.poster_path.movieImageURL
         trailerURL = props.trailerURL.url
+        isFavorite = false
+        toggleFavorite = {}
     }
 }
 

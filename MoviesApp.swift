@@ -1,8 +1,23 @@
 import SwiftUI
 import SafariServices
 
+let states = GlobalStates()
+
+infix operator *: AdditionPrecedence
+func * <T>(lhs: T, rhs: (inout T) -> Void) -> T {
+    var copy = lhs
+    rhs(&copy)
+    return copy
+}
+
 final class GlobalStates: ObservableObject {
     @Published var videoURL: URL?
+}
+
+
+enum FileBase {
+    static let favorites = FileResource("favorites")
+    static let ratings   = FileResource("ratings")
 }
 
 @main
@@ -50,12 +65,20 @@ enum Tab: String, CaseIterable {
         case .home: Home()
         case .centralButton: Genres()
         case .profile: Profile()
+        case .favorites: Favorites()
         default: self.rawValue
         }
     }
 }
 
-
+struct Favorites: View {
+    @StateObject var favorites = FileBase.favorites
+    var body: some View {
+        List(favorites.data.array, id: \.id) { item in
+            Text(item.title)
+        }
+    }
+}
 
 
 struct Profile: View {
@@ -291,7 +314,7 @@ extension Tabbar {
         let videoURL: URL?
         
         var symbolName: String {
-            videoURL == nil ? "popcorn" : "play"
+            videoURL == nil ? "popcorn" : "play.circle"
         }
         
         var color: Color {

@@ -42,6 +42,7 @@ extension Dictionary: HashableJSONKey where Key: JSONKey {
     }
 }
 
+
 public typealias MJ = MagicJSON
 @dynamicMemberLookup
 public enum MagicJSON {
