@@ -71,15 +71,6 @@ extension NetworkGetter {
             
         }.resume()
     }
-    
-//    func fetchData(url: String, completion: @escaping Completion<MJ>) {
-//        fetchData(url: url) { result in
-//            switch result {
-//            case .success(let data): completion(.success(MJ(data: data)))
-//            case .failure(let error): completion(.failure(error))
-//            }
-//        }
-//    }
 }
 
 import SwiftUI
@@ -88,7 +79,6 @@ enum ResourceState {
     case loading
     case success(MJ)
     case error(String)
-//    case empty
 }
 
 extension ResourceState {
@@ -142,7 +132,6 @@ struct JSON<T: View>: View, NetworkGetter {
         case .loading: ProgressView().onAppear(perform: fetchData)
         case .success(let data): closure(result(data))
         case .error(let error): Text(error)
-//        case .empty: "No data found"
         }
     }
     

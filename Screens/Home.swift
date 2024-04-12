@@ -1,21 +1,21 @@
 import SwiftUI
 
 struct Home: View {
-   
+    @Environment(\.theme) var theme: Theme
     var body: some View {
         VStack(spacing: 0) {
             "Hello Clark".body
                 .font(.title2)
                 .fontWeight(.bold)
-                .foregroundColor(.sky900)
+                .foregroundColor(theme.textPrimary)
                 .alignX(.leading)
                 .leading(.s6)
                 .top(.s8)
-            
+
             "Lets explore your favorite movies".body
                 .font(.caption)
                 .fontWeight(.bold)
-                .foregroundColor(.sky900)
+                .foregroundColor(theme.textPrimary)
                 .alignX(.leading)
                 .leading(.s6)
             
@@ -106,11 +106,12 @@ private extension Home {
     }
     
     struct Heading: View {
+        @Environment(\.theme) var theme: Theme
         let text: String
         var body: Text {
             Text(text)
                 .fontWeight(.bold)
-                .foregroundColor(.sky900)
+                .foregroundColor(theme.textPrimary)
         }
     }
 }

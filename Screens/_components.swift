@@ -148,19 +148,16 @@ struct GenreButton: View {
     }
 }
 
-
 struct DefaultBackground: View {
-    let gradient = Gradient(colors: [
-        Color.teal600.opacity(0.5),
-        Color.teal50
-    ])
+    @Environment(\.theme) var theme: Theme
 
     var body: some View {
         LinearGradient(
-            gradient: gradient,
+            gradient: theme.gradient,
             startPoint: .top,
             endPoint: .bottom
         )
         .ignoresSafeArea()
     }
 }
+

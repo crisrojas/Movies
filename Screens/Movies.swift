@@ -71,28 +71,30 @@ struct Movies: View, NetworkGetter {
 
 extension Movies {
     struct Cell: View {
+        
+        @Environment(\.theme) var theme: Theme
         let title: String
-        let backdropURL: URL?
+        let posterURL: URL?
         let overview: String
         
         var body: some View {
             
             HStack(spacing: 24) {
          
-                AsyncImage(url: backdropURL) { image in
+                AsyncImage(url: posterURL) { image in
                     image.resizable()
                 } placeholder: {
                     Color.gray.opacity(0.3)
                         .overlay(ProgressView())
                 }
                 .cornerRadius(4)
-                .width(66)
+                .width(70)
                 .height(100)
                 
                 VStack(alignment: .leading, spacing: 4) {
                     
                     Text(title)
-                        .foregroundColor(.sky900)
+                        .foregroundColor(theme.textPrimary)
                         .fontWeight(.heavy)
                         .font(.system(.headline, design: .rounded))
                         .lineLimit(2)
@@ -104,7 +106,7 @@ extension Movies {
                             .lineLimit(3)
                     }
                     .font(.system(.caption, design: .rounded))
-                    .foregroundColor(.sky900)
+                    .foregroundColor(theme.textPrimary)
                     
                 }
                 
@@ -117,7 +119,7 @@ extension Movies {
 extension Movies.Cell {
     init(props: MJ)  {
         title = props.title
-        backdropURL = props.backdrop_path.movieImageURL
+        posterURL = props.poster_path.movieImageURL
         overview = props.overview
     }
 }

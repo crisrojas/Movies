@@ -12,11 +12,9 @@ struct MoviesApp: App {
             Tabbar()
                 .onAppear(perform: hideBackButtonLabel)
                 .onAppear(perform: hideTabbar)
-                .accentColor(.sky900)
         }
     }
 }
-
 
 fileprivate func hideBackButtonLabel() {
     let backButton = UIBarButtonItem.appearance(whenContainedInInstancesOf: [UINavigationBar.self])
@@ -51,15 +49,158 @@ enum Tab: String, CaseIterable {
         switch self {
         case .home: Home()
         case .centralButton: Genres()
+        case .profile: Profile()
         default: self.rawValue
+        }
+    }
+}
+
+
+
+
+struct Profile: View {
+    @AppStorage("colorScheme") var preferredScheme: ColorScheme?
+    @Environment(\.colorScheme) var colorScheme
+  
+    @Environment(\.theme) var theme
+    var body: some View {
+        List {
+            
+            Section("Appearance") {
+                systemRow
+                row(scheme: .light)
+                row(scheme: .dark)
+            }
+        }
+    }
+    
+    var systemRow: some View {
+        HStack(spacing: .s4) {
+            systemRectangle
+            "Automatic".body.fontWeight(.bold).foregroundColor(theme.textPrimary)
+            Spacer()
+            if preferredScheme == nil {
+                checkmark
+            }
+        }
+        .onTap {
+           preferredScheme = nil
+        }
+    }
+    
+    var systemRectangle: some View {
+        ZStack{
+            rectangle(scheme: .light)
+            rectangle(scheme: .dark)
+                .clipShape(
+                    Path { path in
+                        path.move(to: CGPoint(x: 0, y: .s7))
+                        path.addLine(to: CGPoint(x: .s7, y: 0))
+                        path.addLine(to: CGPoint(x: .s7, y: .s7))
+                        path.closeSubpath()
+                    }
+                )
+        }
+    }
+    
+    var superior: some View {
+        Rectangle()
+            .frame(width: 200, height: 200)
+            .foregroundColor(.blue)
+            .clipShape(
+                Path { path in
+                    path.move(to: CGPoint(x: 0, y: 200))
+                    path.addLine(to: CGPoint(x: 200, y: 0))
+                    path.addLine(to: CGPoint(x: 0, y: 0))
+                    path.closeSubpath()
+                }
+            )
+
+    }
+    
+    var inferior: some View {
+        Rectangle()
+            .frame(width: 200, height: 200)
+            .foregroundColor(.blue)
+            .clipShape(
+                Path { path in
+                    path.move(to: CGPoint(x: 0, y: 200))
+                    path.addLine(to: CGPoint(x: 200, y: 0))
+                    path.addLine(to: CGPoint(x: 200, y: 200))
+                    path.closeSubpath()
+                }
+            )
+    }
+    
+    // @todo: find better name
+    func rectangle(scheme: ColorScheme) -> some View {
+        Rectangle()
+            .size(.s7)
+            .foregroundColor(scheme == .dark ? .black : .white)
+            .cornerRadius(.s1)
+            .overlay("A".font(.title2).foregroundColor(scheme == .dark ? .white : .black))
+            .background(
+                Rectangle()
+                    .foregroundColor(scheme == .dark ? .stone900 : .stone400)
+                    .cornerRadius(.s1h)
+                    .size(.s8)
+            )
+    }
+
+    func row(scheme: ColorScheme) -> some View {
+        HStack(spacing: .s4) {
+           rectangle(scheme: scheme)
+            (scheme == .dark ? "Dark" : "Light").body.fontWeight(.bold).foregroundColor(theme.textPrimary)
+            Spacer()
+            if preferredScheme == scheme {
+                checkmark
+            }
+        }
+        .onTap {
+            preferredScheme = scheme
+        }
+
+    }
+    
+    var checkmark: some View {
+        Image(systemName: "checkmark")
+            .foregroundColor(.blue500)
+            .modify {
+                if #available(iOS 16.0, *) {
+                    $0.fontWeight(.bold)
+                }
+            }
+    }
+}
+
+extension ColorScheme: RawRepresentable {
+    public var rawValue: String {
+        switch self {
+        case .light: return "light"
+        case .dark: return "dark"
+        default: return "unknown"
+        }
+    }
+    
+    public init?(rawValue: String) {
+        switch rawValue {
+        case "light": self = .light
+        case "dark": self = .dark
+        default: return nil
         }
     }
 }
 
 struct Tabbar: View {
     
-    @StateObject var globalStates = states
+    @StateObject var globals = states
     @State var selected: Tab = .home
+    
+    @AppStorage("colorScheme") var scheme: ColorScheme?
+    @Environment(\.colorScheme) var colorScheme
+    var theme: Theme {
+       (scheme ?? colorScheme).theme
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -67,6 +208,10 @@ struct Tabbar: View {
             customTabbar
         }
         .edgesIgnoringSafeArea(.bottom)
+        .environment(\.theme, theme)
+        .ifLet(scheme) { view, colorScheme in
+            view.preferredColorScheme(colorScheme)
+        }
     }
     
     var tabs: some View {
@@ -92,12 +237,9 @@ struct Tabbar: View {
                     if tab != .centralButton {
                         defaultItem(tab)
                     } else {
-                        CentralButton(
-                            tab: tab,
-                            videoURL: globalStates.videoURL
-                        )
+                        CentralButton(videoURL: globals.videoURL)
                         .onTap {
-                            if let videoURL = globalStates.videoURL {
+                            if let videoURL = globals.videoURL {
                                 presentVideo(url: videoURL)
                             } else {
                                 selected = tab
@@ -113,14 +255,15 @@ struct Tabbar: View {
            
             Rectangle()
                 .frame(height: safeAreaInsetsBottom)
-                .foregroundColor(.white)
+                .foregroundColor(theme.tabbarBg)
         }
-        .background(.white)
+        .background(theme.tabbarBg)
     }
     
     func defaultItem(_ tab: Tab) -> some View {
         Item(name: tab.rawValue, systemImage: tab.systemName)
             .opacity(selected == tab ? 1 : 0.3)
+            .foregroundColor(theme.textPrimary)
             .onTap {
                 selected = tab
             }
@@ -144,11 +287,11 @@ struct Tabbar: View {
 
 extension Tabbar {
     struct CentralButton: View {
-        let tab: Tab
+        @Environment(\.theme) var theme: Theme
         let videoURL: URL?
         
         var symbolName: String {
-            videoURL == nil ? tab.systemName : "play"
+            videoURL == nil ? "popcorn" : "play"
         }
         
         var color: Color {
@@ -162,7 +305,7 @@ extension Tabbar {
                 .overlay(symbol)
                 .background(
                     Circle()
-                        .foregroundColor(.white)
+                        .foregroundColor(theme.tabbarBg)
                         .size(.s20)
                 )
                 .offset(y: -.s3h)

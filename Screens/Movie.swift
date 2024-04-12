@@ -9,11 +9,11 @@ import SwiftUI
 
 /* @todo:
  - Persistence
- - Dark mode
  
 // @todo: inject global state through environmentObject...
  */
 let states = GlobalStates()
+
 struct Movie: View, NetworkGetter {
     @StateObject var globals = states
     let props: MJ
@@ -38,7 +38,7 @@ struct Movie: View, NetworkGetter {
                 let item = MJ(data: data).results.array.first
                 guard let key = item?.key.stringValue else { return }
                 DispatchQueue.main.async {
-                    globals.videoURL = URL(string: "https://youtube.com/\(key)")
+                    globals.videoURL = URL(string: "https://youtube.com/watch?=\(key)")
                 }
             case .failure(_): break
             }
@@ -66,6 +66,8 @@ extension Movie {
         let posterURL: URL?
         let trailerURL: URL?
         
+        @Environment(\.theme) var theme: Theme
+        
         var ratingStars: String { voteAverage.makeRatingStars() }
         
         var voteAverageRounded: String {
@@ -82,12 +84,12 @@ extension Movie {
                     .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(.center)
                     .font(.system(size: 24, weight: .heavy, design: .rounded))
-                    .foregroundColor(.sky900)
+                    .foregroundColor(theme.textPrimary)
                     .top(28)
                 
                 Text(voteAverageRounded)
                     .font(.system(size: 38, weight: .black, design: .rounded))
-                    .foregroundColor(.sky900)
+                    .foregroundColor(theme.textPrimary)
                     .top(10)
                 
                 Text(ratingStars)
@@ -182,16 +184,17 @@ extension Movie {
 
 extension Movie {
     struct Info: View {
+        @Environment(\.theme) var theme: Theme
         let title: String
         let value: String
         var body: some View {
             VStack(alignment: .leading) {
                 Text(title)
-                    .foregroundColor(.sky900)
+                    .foregroundColor(theme.textPrimary)
                     .fontWeight(.heavy)
                 Text(value)
                     .fontWeight(.heavy)
-                    .foregroundColor(.sky900)
+                    .foregroundColor(theme.textPrimary)
                     .padding(.top, 5)
             }.font(.footnote)
         }
@@ -201,6 +204,7 @@ extension Movie {
 // MARK: - StoryLine
 extension Movie {
     struct StoryLine: View {
+        @Environment(\.theme) var theme: Theme
         let props: MJ
         var body: some View {
             VStack(
@@ -211,12 +215,12 @@ extension Movie {
                 Text("Storyline")
                     .font(.system(.headline, design: .rounded))
                     .fontWeight(.heavy)
-                    .foregroundColor(.sky900)
+                    .foregroundColor(theme.textPrimary)
 
                 Text(props.overview)
                     .font(.system(.footnote, design: .rounded))
                     .fontWeight(.bold)
-                    .foregroundColor(.sky900)
+                    .foregroundColor(theme.textPrimary)
             }
             .alignX(.leading)
             .top(30)
@@ -227,6 +231,7 @@ extension Movie {
 // MARK: - Cast
 extension Movie {
     struct Cast: View {
+        @Environment(\.theme) var theme: Theme
         let props: MJ
         
         var body: some View {
@@ -236,7 +241,7 @@ extension Movie {
                 Text("Cast")
                     .font(.system(.headline, design: .rounded))
                     .fontWeight(.heavy)
-                    .foregroundColor(.sky900)
+                    .foregroundColor(theme.textPrimary)
                 
                 Carousel(model: props, spacing: 8) { item in
                     actorAvatar(
@@ -271,7 +276,7 @@ extension Movie {
         
         var imagePlaceholder: some View {
             
-            Color.sky900
+            Color.sky900  // @todo
                 .opacity(0.5)
                 .font(.largeTitle)
                 .width(60)
@@ -312,14 +317,11 @@ extension Movie {
 
 extension Movie.Background {
     struct WhiteGradient: View {
-        let gradient = Gradient(colors: [
-            Color.clear,
-            Color.white
-        ])
+        @Environment(\.theme) var theme: Theme
 
         var body: some View {
             LinearGradient(
-                gradient: gradient,
+                gradient: theme.secondGradient,
                 startPoint: .top,
                 endPoint: .bottom
             )

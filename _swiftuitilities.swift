@@ -76,8 +76,6 @@ extension View {
         }
     }
     
-    
-    
     func onTap(perform: @escaping () -> ()) -> some View {
         Button {
             perform()

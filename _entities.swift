@@ -25,10 +25,10 @@ enum FeaturedGenre: String, CaseIterable, Identifiable {
     
     var color: Color {
         switch self {
-        case .fantasy: return WindColor.yellow.c500
-        case .adventure: return WindColor.orange.c500
-        case .action: return WindColor.teal.c500
-        case .sciFi: return WindColor.red.c500
+        case .fantasy: return .yellow500
+        case .adventure: return .orange500
+        case .action: return .teal500
+        case .sciFi: return .red500
         }
     }
 }
