@@ -7,6 +7,36 @@
 
 import SwiftUI
 
+struct Schemer<Content: View>: View {
+    @AppStorage("colorScheme") var scheme: ColorScheme?
+    @Environment(\.colorScheme) var colorScheme
+    var theme: Theme { (scheme ?? colorScheme).theme }
+    var content: () -> Content
+    var body: some View {
+        content()
+            .environment(\.theme, theme)
+            .ifLet(scheme) { $0.preferredColorScheme($1) }
+    }
+}
+
+// RawRepresentable conformance so we can persist to UserDefaults:
+extension ColorScheme: RawRepresentable {
+    public var rawValue: String {
+        switch self {
+        case .light: return "light"
+        case .dark: return "dark"
+        default: return "unknown"
+        }
+    }
+    
+    public init?(rawValue: String) {
+        switch rawValue {
+        case "light": self = .light
+        case "dark": self = .dark
+        default: return nil
+        }
+    }
+}
 
 extension ColorScheme {
     var theme: Theme {
@@ -17,55 +47,8 @@ extension ColorScheme {
     }
 }
 
-enum Scheme: String {
-    case light
-    case dark
-    case system
-}
-
-
-extension Scheme {
-    
-    // @todo
-    var label: String {
-        switch self {
-        case .light: return "Light"
-        case .dark: return "Dark"
-        case .system: return "Automatic"
-        }
-    }
-    
-
-    
-    var theme: Theme {
-        switch self {
-        case .light: return .light
-        case .dark: return .dark
-        case .system:
-            if UITraitCollection.current.userInterfaceStyle == .dark {
-                return .dark
-            } else {
-                return .light
-            }
-        }
-    }
-    
-    var systemScheme: ColorScheme {
-        if UITraitCollection.current.userInterfaceStyle == .dark { return .dark }
-        else { return .light }
-    }
-    
-    var colorScheme: ColorScheme {
-        switch self {
-        case .light: return .light
-        case .dark: return .dark
-        case .system: return systemScheme
-        }
-    }
-}
-
 struct Theme: Equatable {
-    var accent: Color = .teal900
+    var accent: Color = .sky900
     var textPrimary: Color = .sky900
     var tabbarBg: Color = .white
     

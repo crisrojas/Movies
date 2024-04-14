@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct Movie: View, NetworkGetter {
-    @StateObject var globals = states
+    @StateObject var globals = tabStates
     @StateObject var favorites = FileBase.favorites
     
     let props: MJ
@@ -57,7 +57,7 @@ struct Movie: View, NetworkGetter {
     }
     
     func castSection() -> some View {
-        JSON(url: TmdbApi.credits(id: props.id.intValue), keyPath: "cast") {
+        JSON(TmdbApi.credits(id: props.id.intValue), keyPath: "cast") {
             if $0.array.isNotEmpty {
                 Cast(props: $0)
             }
@@ -328,6 +328,7 @@ extension Movie {
                     .fullScreen()
                     .opacity(0.7)
                     .saturation(0.0)
+                    .blur(radius: .s1)
                     .clipped()
                     .edgesIgnoringSafeArea(.top)
                     .overlay(DefaultBackground().opacity(0.5))

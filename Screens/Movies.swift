@@ -28,44 +28,42 @@ struct Movies: View, NetworkGetter {
         components?.queryItems?.append(.init(name: "page", value: page.description))
         let url = components!.url!.absoluteString
         fetchData(url: url) { result in
-            switch result {
-            case .success(let data):
-                let mj = MJ(data: data)
-                if state.isSuccess {
-                    state.appendData(mj, keyPath: "results")
-                } else {
-                    state = .success(mj)
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let data):
+                    let mj = MJ(data: data)
+                    if state.isSuccess {
+                        state.appendData(mj, keyPath: "results")
+                    } else {
+                        state = .success(mj)
+                    }
+                    
+                case .failure(let error): state = .error(error.localizedDescription)
                 }
-                
-            case .failure(let error): state = .error(error.localizedDescription)
             }
+        }
+    }
+    
+    @ViewBuilder // @todo
+    var cellLoading: some View {
+        if loadingMore {
+            ProgressView()
+        }
+    }
+    
+    func onCellAppear(_ data: [MJ], movie: MJ) {
+        if movie.id == data.last?.id {
+            page += 1
+            loadData()
         }
     }
     
     func successView(_ props: MJ) -> some View {
         let data = props.results.array
-        return List {
-            ForEach(data, id: \.id) { movie in
-                Cell(props: movie)
-                    .onTap(navigateTo: Movie(props: movie))
-                    .onAppear {
-                        if movie.id == data.last?.id {
-                           page += 1
-                           loadData()
-                        }
-                    }
-                
-                if loadingMore {
-                    ProgressView()
-                }
-            }
-        }
-        .modify {
-            if #available(iOS 16.0, *) {
-                $0.scrollContentBackground(.hidden)
-            }
-        }
-        .background(DefaultBackground().fullScreen())
+        return List(
+            data: data,
+            onCellAppear: { onCellAppear(data, movie: $0) }
+        )
     }
 }
 
@@ -115,6 +113,28 @@ extension Movies {
         }
     }
 }
+
+
+extension Movies {
+    struct List: View {
+        let data: [MJ]
+        var onCellAppear: (MJ) -> Void = { _ in }
+        var body: some View {
+            SwiftUI.List(data, id: \.id) { movie in
+                Cell(props: movie)
+                    .onTap(navigateTo: Movie(props: movie))
+                    .onAppear(perform: { onCellAppear(movie) })
+            }
+            .modify {
+                if #available(iOS 16.0, *) {
+                    $0.scrollContentBackground(.hidden)
+                }
+            }
+            .background(DefaultBackground().fullScreen())
+        }
+    }
+}
+
 
 extension Movies.Cell {
     init(props: MJ)  {

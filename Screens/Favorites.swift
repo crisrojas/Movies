@@ -10,8 +10,6 @@ import SwiftUI
 struct Favorites: View {
     @StateObject var favorites = FileBase.favorites
     var body: some View {
-        List(favorites.items, id: \.id) { item in
-            Text(item.title)
-        }
+        Movies.List(data: favorites.items)
     }
 }

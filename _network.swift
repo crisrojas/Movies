@@ -120,8 +120,14 @@ struct JSON<T: View>: View, NetworkGetter {
     @State var state = ResourceState.loading
     
     let url: URL
-    var keyPath: String? = "results"
+    let keyPath: String?
     @ViewBuilder var closure: (MJ) -> T
+    
+    init(_ url: URL, keyPath: String? = "results", @ViewBuilder closure: @escaping (MJ) -> T) {
+        self.url = url
+        self.keyPath = keyPath
+        self.closure = closure
+    }
     
     func result(_ mj: MJ) -> MJ {
         keyPath == nil ? mj : mj[keyPath!]

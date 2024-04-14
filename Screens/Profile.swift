@@ -14,7 +14,6 @@ struct Profile: View {
     @Environment(\.theme) var theme
     var body: some View {
         List {
-            
             Section("Appearance") {
                 systemRow
                 row(scheme: .light)

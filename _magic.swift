@@ -111,9 +111,11 @@ public extension MagicJSON {
             self = .raw(jd)
         }
     }
+    
     init() {
         self = .empty
     }
+    
     init(data: Data) {
         let json = try? JSONSerialization.jsonObject(with: data, options: [])
         self.init(json)

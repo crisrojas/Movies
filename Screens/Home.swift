@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct Home: View {
+    
     @Environment(\.theme) var theme: Theme
     var body: some View {
         VStack(spacing: 0) {
@@ -30,7 +31,7 @@ struct Home: View {
     @ViewBuilder
     var popularSection: some View {
         title("Popular movies")
-        JSON(url: TmdbApi.popular) { items in
+        JSON(TmdbApi.popular) { items in
             Carousel(model: items, spacing: .s6) { item in
                 Card(
                     image: item.backdrop_path,
@@ -49,7 +50,7 @@ struct Home: View {
             title("Categories")
             Spacer()
             Heading(text: "View all")
-                .onTap(navigateTo: Genres())
+                .onTap { tabStates.selectedTab = .button }
                 .trailing(.s6)
         }
         
@@ -63,7 +64,7 @@ struct Home: View {
     @ViewBuilder
     var nowPlayingSection: some View {
         title("Now playing")
-        JSON(url: TmdbApi.now_playing) { items in
+        JSON(TmdbApi.now_playing) { items in
             TwoColumnsGrid.from(items) { item in
                 poster(path: item.poster_path)
                     .onTap(navigateTo: Movie(props: item))

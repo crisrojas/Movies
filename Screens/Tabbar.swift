@@ -11,7 +11,7 @@ import SafariServices
 enum Tab: String, CaseIterable {
     case home
     case favorites
-    case centralButton
+    case button
     case stars
     case profile
     
@@ -19,7 +19,7 @@ enum Tab: String, CaseIterable {
         switch self {
         case .home: return "house"
         case .favorites: return "heart"
-        case .centralButton: return "popcorn"
+        case .button: return "popcorn"
         case .stars: return "star"
         case .profile: return "person"
         }
@@ -28,9 +28,9 @@ enum Tab: String, CaseIterable {
     @ViewBuilder
     var screen: some View {
         switch self {
-        case .home: Home()
-        case .centralButton: Genres()
-        case .profile: Profile()
+        case .home     : Home()
+        case .button   : Genres()
+        case .profile  : Profile()
         case .favorites: Favorites()
         default: self.rawValue
         }
@@ -39,27 +39,20 @@ enum Tab: String, CaseIterable {
 
 struct Tabbar: View {
     
-    @StateObject var globals = states
-    @State var selected: Tab = .home
-    
-    @AppStorage("colorScheme") var scheme: ColorScheme?
-    @Environment(\.colorScheme) var colorScheme
-    var theme: Theme { (scheme ?? colorScheme).theme }
+    @StateObject var states = tabStates
+    @Environment(\.theme) var theme
     
     var body: some View {
         VStack(spacing: 0) {
             tabs
             customTabbar
         }
+        .accentColor(theme.accent)
         .edgesIgnoringSafeArea(.bottom)
-        .environment(\.theme, theme)
-        .ifLet(scheme) { view, colorScheme in
-            view.preferredColorScheme(colorScheme)
-        }
     }
     
     var tabs: some View {
-        TabView(selection: $selected) {
+        TabView(selection: $states.selectedTab) {
             ForEach(Tab.allCases, id: \.self) { tab in
                 tab.screen
                     .navigationify()
@@ -77,15 +70,15 @@ struct Tabbar: View {
                 Spacer()
                 ForEach(Tab.allCases, id: \.self) { tab in
                     Spacer()
-                    if tab != .centralButton {
+                    if tab != .button {
                         defaultItem(tab)
                     } else {
-                        CentralButton(videoURL: globals.videoURL)
+                        CentralButton(videoURL: states.videoURL)
                         .onTap {
-                            if let videoURL = globals.videoURL {
+                            if let videoURL = states.videoURL {
                                 presentVideo(url: videoURL)
                             } else {
-                                selected = tab
+                                states.selectedTab = tab
                             }
                         }
                     }
@@ -105,11 +98,9 @@ struct Tabbar: View {
     
     func defaultItem(_ tab: Tab) -> some View {
         Item(name: tab.rawValue, systemImage: tab.systemName)
-            .opacity(selected == tab ? 1 : 0.3)
+            .opacity(states.selectedTab == tab ? 1 : 0.3)
             .foregroundColor(theme.textPrimary)
-            .onTap {
-                selected = tab
-            }
+            .onTap { states.selectedTab = tab }
     }
     
     func presentVideo(url: URL) {
@@ -130,6 +121,7 @@ struct Tabbar: View {
 
 extension Tabbar {
     struct CentralButton: View {
+        @StateObject var _tabStates = tabStates
         @Environment(\.theme) var theme: Theme
         let videoURL: URL?
         
@@ -138,7 +130,7 @@ extension Tabbar {
         }
         
         var color: Color {
-            videoURL == nil ? .teal400 : .orange400 // &todo: put in environment theme ?
+            videoURL == nil ? (_tabStates.selectedTab == .button ? .orange400 : .teal400) : .orange400 // @todo: put in environment theme ? @todo selecetedtab not working
         }
         
         var body: some View {
@@ -146,6 +138,7 @@ extension Tabbar {
                 .size(.s16)
                 .foregroundColor(color)
                 .shadow(color: color.opacity(0.5), radius: 10)
+                .animation(.easeInOut, value: _tabStates.selectedTab)
                 .overlay(symbol)
                 .background(
                     Circle()

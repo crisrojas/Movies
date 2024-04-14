@@ -1,18 +1,21 @@
 import SwiftUI
 
-let states = GlobalStates()
+let tabStates = TabStates()
 
-final class GlobalStates: ObservableObject {
+final class TabStates: ObservableObject {
     @Published var videoURL: URL?
+    @Published var selectedTab = Tab.home
 }
 
 @main
 struct MoviesApp: App {
     var body: some Scene {
         WindowGroup {
-            Tabbar()
-                .onAppear(perform: hideBackButtonLabel)
-                .onAppear(perform: hideTabbar)
+            Schemer {
+                Tabbar()
+                    .onAppear(perform: hideBackButtonLabel)
+                    .onAppear(perform: hideTabbar)
+            }
         }
     }
 }

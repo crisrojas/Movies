@@ -1,5 +1,4 @@
 - Persistence:
-    - favorite list
     - rating list
     - search/filter on saved lists
     - filter by category
