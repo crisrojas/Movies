@@ -6,3 +6,4 @@
 - Empty states
 - search filter
 - Tips
+- Fix performance problems (probalby due to magicjson)

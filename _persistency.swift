@@ -15,8 +15,11 @@ enum FileBase {
 
 
 final class FileResource: ObservableObject {
+
+    // @todo: Find a better way of preventing calling persist()
+    var endedInitialization = false
     @Published var data = JSON.arr([]) {
-        didSet { persist() }
+        didSet { if endedInitialization { persist() } }
     }
     
     var items: [JSON] {data.array}
@@ -25,6 +28,7 @@ final class FileResource: ObservableObject {
     init(_ path: String) {
         self.path = path + ".txt"
         data = read()
+        endedInitialization = true
     }
     
     func contains(_ itemId: String) -> Bool {read(id: itemId) != nil}

@@ -44,6 +44,23 @@ struct Carousel<Content: View>: View {
     }
 }
 
+struct Carousel_Identifiable<Content: View, T: Identifiable>: View {
+    
+    let model: [T]
+    let spacing: CGFloat
+    let content: (T) -> Content
+    
+    var body: some View {
+        
+        HStack(spacing: spacing) {
+            ForEach(model, id: \.id) { item in
+                content(item)
+            }
+        }
+        .scrollify(.horizontal)
+    }
+}
+
 enum TwoColumnsGrid {
     
     

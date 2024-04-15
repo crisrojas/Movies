@@ -19,15 +19,16 @@ struct Movie: View, NetworkGetter {
                 $0.isFavorite = favorites.contains(props.id)
                 $0.toggleFavorite = toggleFavorite
             }
-            InfoStack(props: props).top(.s6)
-            StoryLine(props: props).top(.s9)
-            castSection().vertical(.s9)
+//            InfoStack(props: props).top(.s6)
+//            StoryLine(props: props).top(.s9)
+            castSection()
+            Text("hello")
         }
         .horizontal(.s6)
         .scrollify()
         .background(background.fullScreen())
-        .task { await getTrailerURL() }
-        .onDisappear { setTabVideoURL(nil) }
+//        .onAppear { getTrailerURL() }
+//        .onDisappear { setTabVideoURL(nil) }
     }
     
     
@@ -38,7 +39,7 @@ struct Movie: View, NetworkGetter {
             favorites.add(props)
         }
     }
-    
+
     func getTrailerURL() async {
         let url = TMDb.videos(id: props.id.intValue)
         if let (data, _) = try? await fetchData(url: url) {
@@ -54,14 +55,28 @@ struct Movie: View, NetworkGetter {
     }
     
     func castSection() -> some View {
-        AsyncJSON(url: TMDb.credits(id: props.id.intValue), keyPath: "cast") {
-            if $0.array.isNotEmpty {
-                Cast(props: $0)
-            }
+        AsyncDecodable(url: TMDb.credits(id: props.id.intValue)) { (r: CastResponse) in
+            CastView(cast: r.cast)
         }
     }
 }
 
+extension Movie {
+    struct CastView: View {
+        let cast: [MovieCast]
+        var body: some View {
+            Carousel_Identifiable(model: cast, spacing: .base) { item in
+                Movie.Cast.ActorAvatar(
+                    path: item.profile_path,
+                    id: item.credit_id
+                )
+                .onTapScaleDown()
+                //            .leading(item.credit_id  == cast.first?.credit_id ? .s6 : 0)
+                //            .trailing(item.credit_id == cast.last?.credit_id ? .s6 : 0)
+            }
+        }
+    }
+}
 // MARK: - Header
 extension Movie {
     struct Header: View {
@@ -111,9 +126,7 @@ extension Movie {
             VStack(spacing: .s4) {
                 Image(systemName: "heart.fill")
                     .opacity(isFavorite ? 1 : 0.3)
-                    .onTap {
-                        toggleFavorite()
-                    }
+                    .onTap { toggleFavorite() }
                     .buttonStyle(ScaleDownButtonStyle())
                 .foregroundColor(isFavorite ? .red600 : theme.textPrimary)
                 .animation(.easeInOut, value: isFavorite)
@@ -256,7 +269,21 @@ extension Movie {
     }
 }
 
+struct MovieCast: Decodable, Identifiable, Equatable {
+    let id: Int
+    let name: String
+    let profile_path: String?
+    let credit_id: String?
+    
+    var profileURL: URL? {
+        guard let profilePath = profile_path else { return nil }
+        return URL(string: "https://image.tmdb.org/t/p/w500\(profilePath)")
+    }
+}
 
+struct CastResponse: Decodable {
+    let cast: [MovieCast]
+}
 // MARK: - Cast
 extension Movie {
     struct Cast: View {
@@ -273,7 +300,7 @@ extension Movie {
                     .foregroundColor(theme.textPrimary)
                 
                 Carousel(model: props, spacing: .s2) { item in
-                    actorAvatar(
+                    ActorAvatar(
                         path: item.profile_path,
                         id: item.credit_id
                     )
@@ -285,15 +312,25 @@ extension Movie {
             }
         }
         
-        func actorAvatar(path: String, id: String?) -> some View {
-            let profileURL = URL(string: "https://image.tmdb.org/t/p/w500\(path)")
-            
-            return AsyncImage(url: profileURL) { image in
+       
+    }
+}
+
+extension Movie.Cast {
+    struct ActorAvatar: View {
+        @Environment(\.theme) var theme
+        let path: String?, id: String?
+        var profileURL: URL? {
+            URL(string: "https://image.tmdb.org/t/p/w500\(path ?? "")")
+        }
+        
+        var body: some View {
+            AsyncImage(url: profileURL) { image in
                 
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                  
+                
                 
                 
             } placeholder: {
@@ -302,7 +339,6 @@ extension Movie {
             .size(.s14)
             .cornerRadius(.s2)
         }
-        
         var imagePlaceholder: some View {
             
             theme.imgPlaceholder
