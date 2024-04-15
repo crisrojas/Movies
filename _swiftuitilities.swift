@@ -7,6 +7,20 @@
 
 import SwiftUI
 
+// Remove default spacing of freaking SwiftUI on stacks...
+struct HStack<Content: View>: View {
+    var alignment: VerticalAlignment = .center
+    var spacing: CGFloat = 0
+    @ViewBuilder var content: () -> Content
+    var body: some View {
+        SwiftUI.HStack(
+            alignment: alignment,
+            spacing: spacing,
+            content: content
+        )
+    }
+}
+
 extension View {
     
     // padding

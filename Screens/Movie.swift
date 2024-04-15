@@ -270,7 +270,7 @@ extension Movie {
                     .fontWeight(.heavy)
                     .foregroundColor(theme.textPrimary)
                 
-                Carousel(model: props, spacing: 8) { item in
+                Carousel(model: props, spacing: .s2) { item in
                     actorAvatar(
                         path: item.profile_path,
                         id: item.credit_id

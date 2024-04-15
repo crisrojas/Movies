@@ -106,7 +106,7 @@ extension Movies.List {
         
         var body: some View {
             
-            HStack(spacing: 24) {
+            HStack(spacing: .s8) {
          
                 AsyncImage(url: posterURL) { image in
                     image.resizable()
