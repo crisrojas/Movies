@@ -57,7 +57,6 @@ struct Theme: Equatable {
     var gradientSecond: Color = .teal50
     
     var imgPlaceholder: Color = .neutral200
-    
     var circleButtonDefault: Color = .teal400
     var circleButtonSecondary: Color = .orange400
     

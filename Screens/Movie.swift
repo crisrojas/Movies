@@ -19,9 +19,9 @@ struct Movie: View, NetworkGetter {
                 $0.isFavorite = favorites.contains(props.id)
                 $0.toggleFavorite = toggleFavorite
             }
-            InfoStack(props: props).top(.s5)
-            StoryLine(props: props)
-            castSection().vertical(.s6)
+            InfoStack(props: props).top(.s6)
+            StoryLine(props: props).top(.s9)
+            castSection().vertical(.s9)
         }
         .horizontal(.s6)
         .scrollify()
@@ -85,23 +85,25 @@ extension Movie {
             VStack {
                 
                 posterView
+                    .onTapScaleDown()
                     .overlay(actions, alignment: .trailing)
+                    .top(.s4)
                 
                 Text(title)
                     .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(.center)
                     .font(.system(size: 24, weight: .heavy, design: .rounded))
                     .foregroundColor(theme.textPrimary)
-                    .top(28)
+                    .top(.s8)
                 
                 Text(voteAverageRounded)
                     .font(.system(size: 38, weight: .black, design: .rounded))
                     .foregroundColor(theme.textPrimary)
-                    .top(10)
+                    .top(.s3)
                 
                 Text(ratingStars)
                     .foregroundColor(Color.orange)
-                    .top(10)
+                    .top(.s3)
             }
         }
         
@@ -166,7 +168,7 @@ extension Movie {
         }
         
         var year: String {
-            guard let releaseDate = dateFormatter.date(from: props.release_date.stringValue) else {
+            guard let releaseDate = dateFormatter.date(from: props.release_date) else {
                 return "N/A"
             }
             return yearFormatter.string(from: releaseDate)
@@ -250,10 +252,10 @@ extension Movie {
                     .foregroundColor(theme.textPrimary)
             }
             .alignX(.leading)
-            .top(.s7)
         }
     }
 }
+
 
 // MARK: - Cast
 extension Movie {
@@ -275,6 +277,7 @@ extension Movie {
                         path: item.profile_path,
                         id: item.credit_id
                     )
+                    .onTapScaleDown()
                     .leading(item.id == props.first?.id ? .s6 : 0)
                     .trailing(item.id == props.last?.id ? .s6 : 0)
                 }
@@ -290,26 +293,20 @@ extension Movie {
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .width(60)
-                    .height(60)
-                    .cornerRadius(8)
+                  
                 
                 
             } placeholder: {
                 imagePlaceholder
-                
             }
+            .size(.s14)
+            .cornerRadius(.s2)
         }
         
         var imagePlaceholder: some View {
             
-            Color.sky900  // @todo
-                .opacity(0.5)
+            theme.imgPlaceholder
                 .font(.largeTitle)
-                .width(60)
-                .height(60)
-                .cornerRadius(12)
-                .opacity(0.3)
                 .overlay(Text(randomEmoji()))
         }
         

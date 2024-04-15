@@ -11,19 +11,20 @@ struct Home: View {
     var body: some View {
         VStack {
             "Hello Clark".body
-                .font(.title2)
+                .font(.system(.title2, design: .rounded))
                 .fontWeight(.bold)
                 .foregroundColor(theme.textPrimary)
                 .alignX(.leading)
                 .leading(.s6)
-                .top(.s8)
+                .top(.s16)
 
             "Lets explore your favorite movies".body
-                .font(.caption)
+                .font(.system(.caption, design: .rounded))
                 .fontWeight(.bold)
                 .foregroundColor(theme.textPrimary)
                 .alignX(.leading)
                 .leading(.s6)
+                .top(.s2)
             
             popularSection
             genresSection
@@ -41,11 +42,11 @@ struct Home: View {
         AsyncJSON(url: TMDb.popular) { items in
             Carousel(model: items, spacing: .s6) { item in
                 Card(
-                    image: item.backdrop_path,
-                    title: item.title,
+                    image: item.backdrop_path.string,
+                    title: item.title.string,
                     genres:  nil // @todo
                 )
-                .leading(items.first?.id == item.id ? 24 : 0)
+                .leading(items.first?.id.string == item.id.string ? 24 : 0)
                 .onTap(navigateTo: Movie(props: item))
                 .buttonStyle(ScaleDownButtonStyle())
             }
@@ -88,7 +89,7 @@ struct Home: View {
             .alignX(.leading)
             .leading(.s6)
             .bottom(.s4)
-            .top(.s8)
+            .top(.s16)
     }
 }
 
@@ -121,6 +122,7 @@ private extension Home {
         let text: String
         var body: Text {
             Text(text)
+                .font(.system(.body, design: .rounded))
                 .fontWeight(.bold)
                 .foregroundColor(theme.textPrimary)
         }

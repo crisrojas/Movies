@@ -12,7 +12,8 @@ struct Genres: View {
     var body: some View {
         AsyncJSON(url: TMDb.genres, keyPath: "genres")  { genres in
             List(genres.array, id: \.id) { genre in
-                Text(genre.name)
+                genre.name
+                    .font(.system(.headline, design: .rounded))
                     .onTap(navigateTo: list(genre.id.intValue))
             }
             .background(DefaultBackground().fullScreen())

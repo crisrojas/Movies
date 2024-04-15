@@ -117,6 +117,7 @@ struct AsyncJSON<C: View, P: View, E: View>: View {
     init(
         url: URL,
         keyPath: String? = "results",
+        delay: UInt64? = nil,
         @ViewBuilder content: @escaping (JSON) -> C,
         @ViewBuilder placeholder: @escaping () -> P = {ProgressView()},
         @ViewBuilder error: @escaping (String) -> E = {Text($0)}
@@ -145,6 +146,7 @@ struct AsyncJSON<C: View, P: View, E: View>: View {
         )
     }
 }
+
 
 // https://stackoverflow.com/questions/69214543/how-can-i-add-caching-to-asyncimage
 // @todo: handle errors

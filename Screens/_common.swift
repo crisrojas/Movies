@@ -8,10 +8,21 @@
 import SwiftUI
 
 struct ScaleDownButtonStyle: ButtonStyle {
+    var factor = 0.9
+    var duration = 0.1
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(configuration.isPressed ? 0.9 : 1)
-            .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
+            .scaleEffect(configuration.isPressed ? factor : 1)
+            .animation(.easeInOut(duration: duration), value: configuration.isPressed)
+    }
+}
+
+extension View {
+    func onTapScaleDown() -> some View {
+        self
+            .onTap {}
+            .buttonStyle(ScaleDownButtonStyle())
+        
     }
 }
 
@@ -25,7 +36,7 @@ struct Carousel<Content: View>: View {
     var body: some View {
         
         HStack(spacing: spacing) {
-            ForEach(model.array, id: \.id) { item in
+            ForEach(model.array, id: \.id.string) { item in
                 content(item)
             }
         }
@@ -41,7 +52,7 @@ enum TwoColumnsGrid {
     static func from<Content: View>(_ items: JSON, content: @escaping (JSON) -> Content) -> some View {
         return LazyVGrid(columns: columns) {
             
-            ForEach(items.array, id: \.id) { item in
+            ForEach(items.array, id: \.id.string) { item in
                 content(item)
             }
         }
