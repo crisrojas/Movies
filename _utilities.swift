@@ -7,6 +7,9 @@
 
 import Foundation
 
+func youtubeURL(key: String) -> URL? {
+    URL(string: "https://youtube.com/watch?=\(key)")
+}
 
 infix operator *: AdditionPrecedence
 func * <T>(lhs: T, rhs: (inout T) -> Void) -> T {

@@ -9,38 +9,35 @@ import SwiftUI
 
 struct Movies: View, NetworkGetter {
     
-    @State var state = ResourceState.loading
+    @State var state = JsonState.loading
     @State var loadingMore = false
     @State var page = 1
     
     let url: URL
     
+    var currentURL: URL {
+        url.appendingQueryItem("page", value: page)
+    }
+    
     var body: some View {
         switch state {
-        case .loading: ProgressView().onAppear(perform: loadData)
+        case .loading: ProgressView().task { await loadData() }
         case .success(let data): successView(data)
         case .error(let error): error
         }
     }
     
-    func loadData() {
-        var components = URLComponents(string: url.absoluteString)
-        components?.queryItems?.append(.init(name: "page", value: page.description))
-        let url = components!.url!.absoluteString
-        fetchData(url: url) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let data):
-                    let mj = MJ(data: data)
-                    if state.isSuccess {
-                        state.appendData(mj, keyPath: "results")
-                    } else {
-                        state = .success(mj)
-                    }
-                    
-                case .failure(let error): state = .error(error.localizedDescription)
-                }
+    func loadData() async {
+        do {
+            let data = try await fetchData(url: currentURL)
+            let json = JSON(data: data)
+            if state.isSuccess {
+                state.appendData(json, keyPath: "results")
+            } else {
+                state = .success(json)
             }
+        } catch {
+            state = .error(error.localizedDescription)
         }
     }
     
@@ -51,18 +48,18 @@ struct Movies: View, NetworkGetter {
         }
     }
     
-    func onCellAppear(_ data: [MJ], movie: MJ) {
+    func cellTask(_ data: [JSON], movie: JSON) async {
         if movie.id == data.last?.id {
             page += 1
-            loadData()
+            await loadData()
         }
     }
     
-    func successView(_ props: MJ) -> some View {
+    func successView(_ props: JSON) -> some View {
         let data = props.results.array
         return List(
             data: data,
-            onCellAppear: { onCellAppear(data, movie: $0) }
+            cellTask: { await cellTask(data, movie: $0) }
         )
     }
 }
@@ -117,13 +114,13 @@ extension Movies {
 
 extension Movies {
     struct List: View {
-        let data: [MJ]
-        var onCellAppear: (MJ) -> Void = { _ in }
+        let data: [JSON]
+        var cellTask: (JSON) async -> Void = { _ in }
         var body: some View {
             SwiftUI.List(data, id: \.id) { movie in
                 Cell(props: movie)
                     .onTap(navigateTo: Movie(props: movie))
-                    .onAppear(perform: { onCellAppear(movie) })
+                    .task { await cellTask(movie) }
             }
             .modify {
                 if #available(iOS 16.0, *) {
@@ -137,7 +134,7 @@ extension Movies {
 
 
 extension Movies.Cell {
-    init(props: MJ)  {
+    init(props: JSON)  {
         title = props.title
         posterURL = props.poster_path.movieImageURL
         overview = props.overview

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct Home: View {
-    
+    @StateObject var tabState = Globals.tabState
     @Environment(\.theme) var theme: Theme
     var body: some View {
         VStack(spacing: 0) {
@@ -31,7 +31,7 @@ struct Home: View {
     @ViewBuilder
     var popularSection: some View {
         title("Popular movies")
-        JSON(TmdbApi.popular) { items in
+        AsyncJSON(url: TmdbApi.popular) { items in
             Carousel(model: items, spacing: .s6) { item in
                 Card(
                     image: item.backdrop_path,
@@ -40,6 +40,7 @@ struct Home: View {
                 )
                 .leading(items.first?.id == item.id ? 24 : 0)
                 .onTap(navigateTo: Movie(props: item))
+                .buttonStyle(ScaleDownButtonStyle())
             }
         }
     }
@@ -50,7 +51,7 @@ struct Home: View {
             title("Categories")
             Spacer()
             Heading(text: "View all")
-                .onTap { tabStates.selectedTab = .button }
+                .onTap { tabState.selectedTab = .button }
                 .trailing(.s6)
         }
         
@@ -64,10 +65,11 @@ struct Home: View {
     @ViewBuilder
     var nowPlayingSection: some View {
         title("Now playing")
-        JSON(TmdbApi.now_playing) { items in
+        AsyncJSON(url: TmdbApi.now_playing) { items in
             TwoColumnsGrid.from(items) { item in
                 poster(path: item.poster_path)
                     .onTap(navigateTo: Movie(props: item))
+                    .buttonStyle(ScaleDownButtonStyle())
             }
         }
         .horizontal(.s6)

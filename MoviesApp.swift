@@ -1,8 +1,10 @@
 import SwiftUI
 
-let tabStates = TabStates()
+enum Globals {
+    static let tabState = TabState()
+}
 
-final class TabStates: ObservableObject {
+final class TabState: ObservableObject {
     @Published var videoURL: URL?
     @Published var selectedTab = Tab.home
 }
@@ -15,9 +17,18 @@ struct MoviesApp: App {
                 Tabbar()
                     .onAppear(perform: hideBackButtonLabel)
                     .onAppear(perform: hideTabbar)
+                    .onAppear(perform: configureCachePolicy)
             }
         }
     }
+}
+
+fileprivate func configureCachePolicy() {
+    let cache = URLCache.shared
+    let cachePolicy = URLRequest.CachePolicy.returnCacheDataElseLoad
+    let config = URLSession.shared.configuration
+    config.urlCache = cache
+    config.requestCachePolicy = cachePolicy
 }
 
 fileprivate func hideBackButtonLabel() {

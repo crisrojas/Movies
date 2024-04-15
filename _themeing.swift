@@ -55,6 +55,9 @@ struct Theme: Equatable {
     var gradientFirst: Color = .teal600
     var gradientSecond: Color = .teal50
     
+    var circleButtonDefault: Color = .teal400
+    var circleButtonSecondary: Color = .orange400
+    
     var gradient: Gradient {
         .init(colors: [gradientFirst.opacity(0.7), gradientSecond])
     }
@@ -82,11 +85,5 @@ extension EnvironmentValues {
     var theme: Theme {
         get { self[ThemeProviderKey.self] }
         set { self[ThemeProviderKey.self] = newValue }
-    }
-}
-
-extension View {
-    func theme(_ theme: Theme) -> some View {
-        self.environment(\.theme, theme)
     }
 }

@@ -39,7 +39,7 @@ enum Tab: String, CaseIterable {
 
 struct Tabbar: View {
     
-    @StateObject var states = tabStates
+    @StateObject var states = Globals.tabState
     @Environment(\.theme) var theme
     
     var body: some View {
@@ -121,7 +121,7 @@ struct Tabbar: View {
 
 extension Tabbar {
     struct CentralButton: View {
-        @StateObject var _tabStates = tabStates
+        @StateObject var tabState = Globals.tabState
         @Environment(\.theme) var theme: Theme
         let videoURL: URL?
         
@@ -129,8 +129,12 @@ extension Tabbar {
             videoURL == nil ? "popcorn" : "play.circle"
         }
         
+        var defaultColor: Color {
+            tabState.selectedTab == .button ? theme.circleButtonSecondary : theme.circleButtonDefault
+        }
+        
         var color: Color {
-            videoURL == nil ? (_tabStates.selectedTab == .button ? .orange400 : .teal400) : .orange400 // @todo: put in environment theme ? @todo selecetedtab not working
+            videoURL == nil ? defaultColor : theme.circleButtonSecondary
         }
         
         var body: some View {
@@ -138,7 +142,7 @@ extension Tabbar {
                 .size(.s16)
                 .foregroundColor(color)
                 .shadow(color: color.opacity(0.5), radius: 10)
-                .animation(.easeInOut, value: _tabStates.selectedTab)
+                .animation(.easeInOut, value: tabState.selectedTab)
                 .overlay(symbol)
                 .background(
                     Circle()

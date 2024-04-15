@@ -24,6 +24,20 @@ extension String: View {
 }
 
 
+extension URL {
+    func appendingQueryItem(_ name: String, value: Any) -> URL {
+        var components = URLComponents(string: self.absoluteString)
+        components?.queryItems?.append(.init(name: name, value: String(describing: value)))
+        return components!.url!
+    }
+}
+
+extension UIImage {
+    func image() -> Image {
+        Image(uiImage: self)
+    }
+}
+
 #if DEBUG
 extension Result {
     var data: Success? {

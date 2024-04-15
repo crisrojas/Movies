@@ -15,11 +15,11 @@ enum FileBase {
 
 
 final class FileResource: ObservableObject {
-    @Published var data = MJ.arr([]) {
+    @Published var data = JSON.arr([]) {
         didSet { persist() }
     }
     
-    var items: [MJ] {data.array}
+    var items: [JSON] {data.array}
     
     let path: String
     init(_ path: String) {
@@ -29,22 +29,24 @@ final class FileResource: ObservableObject {
     
     func contains(_ itemId: String) -> Bool {read(id: itemId) != nil}
    
-    func read() -> MagicJSON {
+    func read() -> JSON {
         do {
             let data = try Data(contentsOf: fileURL())
-            return MagicJSON(data: data)
+            return JSON(data: data)
         } catch {
             print("Error reading file: \(error)")
             return .arr([])
         }
     }
     
-    func read(id: String) -> MJ? {data.array.first(where: {$0.id == id})}
-    func add(_ item: MJ) {
+    func read(id: String) -> JSON? {data.array.first(where: {$0.id == id})}
+    
+    func add(_ item: JSON) {
         let new = data.array + [item]
         data = .arr(new)
     }
-    func delete(_ item: MJ) {
+    
+    func delete(_ item: JSON) {
         var array = data.array
         if let index = array.firstIndex(where: {$0.id == item.id}) {
             array.remove(at: index)

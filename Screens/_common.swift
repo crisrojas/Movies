@@ -7,6 +7,14 @@
 
 import SwiftUI
 
+struct ScaleDownButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.9 : 1)
+            .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
 struct Card: View {
     let image: String?
     let title: String?
@@ -86,9 +94,9 @@ private extension Card {
 
 struct Carousel<Content: View>: View {
     
-    let model: MJ
+    let model: JSON
     let spacing: CGFloat
-    let content: (MJ) -> Content
+    let content: (JSON) -> Content
     
     var body: some View {
         
@@ -106,7 +114,7 @@ enum TwoColumnsGrid {
     
     static let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 2)
     
-    static func from<Content: View>(_ items: MJ, content: @escaping (MJ) -> Content) -> some View {
+    static func from<Content: View>(_ items: JSON, content: @escaping (JSON) -> Content) -> some View {
         return LazyVGrid(columns: columns) {
             
             ForEach(items.array, id: \.id) { item in
@@ -129,7 +137,6 @@ struct GenreButton: View {
     let model: FeaturedGenre
     
     var body: some View {
-        
         model.color
             .cornerRadius(10)
             .shadow(color: model.color.opacity(0.5), radius: 10)

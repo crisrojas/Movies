@@ -24,7 +24,7 @@ extension Dictionary: HashableJSONKey where Key: JSONKey {
         var nd: [Key: Any?] = self
         nd = nd.mapValues { v in
             guard let v = v else {
-                return MJ.nullString
+                return JSON.nullString
             }
             return v
         }
@@ -42,43 +42,41 @@ extension Dictionary: HashableJSONKey where Key: JSONKey {
     }
 }
 
-
-public typealias MJ = MagicJSON
 @dynamicMemberLookup
-public enum MagicJSON {
+public enum JSON {
     public static var nullString = "null"
     case arr([Any]), dict([String: Any]), empty, null, raw(Any)
 }
 
-extension MagicJSON: ExpressibleByArrayLiteral {
+extension JSON: ExpressibleByArrayLiteral {
     public typealias ArrayLiteralElement = Any
     public init(arrayLiteral elements: ArrayLiteralElement...) {
         self.init(elements)
     }
 }
 
-extension MagicJSON: ExpressibleByStringLiteral {
+extension JSON: ExpressibleByStringLiteral {
     public typealias StringLiteralType = String
     public init(stringLiteral value: StringLiteralType) {
         self.init(value)
     }
 }
 
-extension MagicJSON: ExpressibleByIntegerLiteral {
+extension JSON: ExpressibleByIntegerLiteral {
     public typealias IntegerLiteralType = Int
     public init(integerLiteral value: IntegerLiteralType) {
         self.init(value)
     }
 }
 
-extension MagicJSON: ExpressibleByFloatLiteral {
+extension JSON: ExpressibleByFloatLiteral {
     public typealias FloatLiteralType = Double
     public init(floatLiteral value: FloatLiteralType) {
         self.init(value)
     }
 }
 
-extension MagicJSON: ExpressibleByBooleanLiteral {
+extension JSON: ExpressibleByBooleanLiteral {
     public typealias BooleanLiteralType = Bool
     public init(booleanLiteral value: BooleanLiteralType) {
         self.init(value)
@@ -91,8 +89,7 @@ extension String: JSONKey {
     }
 }
 
-
-public extension MagicJSON {
+public extension JSON {
     init(_ jd: Any?) {
         guard let jd = jd else {
             self = .null
@@ -105,7 +102,7 @@ public extension MagicJSON {
             self = .dict(u.toStringKey())
         case let u as HashableJSONKey:
             self = .dict(u.toStringKey())
-        case let u as MJ:
+        case let u as JSON:
             self = u
         default:
             self = .raw(jd)
@@ -121,7 +118,7 @@ public extension MagicJSON {
         self.init(json)
     }
     
-    subscript(dynamicMember key: String) -> MagicJSON {
+    subscript(dynamicMember key: String) -> JSON {
         return self[key]
     }
     
@@ -129,15 +126,13 @@ public extension MagicJSON {
         return self[key].stringValue
     }
     
-   
-    
-    subscript<T>(_ k: T) -> MagicJSON where T: JSONKey {
+    subscript<T>(_ k: T) -> JSON where T: JSONKey {
         get {
             switch self {
             case .dict(let d):
-                return MagicJSON(d[k.jkey])
+                return JSON(d[k.jkey])
             default:
-                return MagicJSON.null
+                return JSON.null
             }
         }
         set {
@@ -154,16 +149,17 @@ public extension MagicJSON {
             }
         }
     }
-    subscript(_ idx: Int) -> MagicJSON {
+    
+    subscript(_ idx: Int) -> JSON {
         get {
             switch self {
             case .arr(let arr):
                 guard 0 ..< arr.count ~= idx else {
-                    return MagicJSON.null
+                    return JSON.null
                 }
-                return MagicJSON(arr[idx])
+                return JSON(arr[idx])
             default:
-                return MagicJSON.null
+                return JSON.null
             }
         }
         set {
@@ -244,22 +240,22 @@ public extension MagicJSON {
             return nil
         }
     }
-    var array: [MagicJSON] {
+    var array: [JSON] {
         switch self {
         case .arr(let u):
-            return u.map {MagicJSON($0)}
+            return u.map {JSON($0)}
         default:
             return []
         }
     }
     
-    var first: MagicJSON? {array.first}
-    var last: MagicJSON? {array.last}
+    var first: JSON? {array.first}
+    var last: JSON? {array.last}
     
-    var dictValue: [String: MagicJSON] {
+    var dictValue: [String: JSON] {
         switch self {
         case .dict(let u):
-            return u.mapValues {MagicJSON($0)}
+            return u.mapValues {JSON($0)}
         default:
             return [:]
         }
@@ -280,17 +276,18 @@ public extension MagicJSON {
     var jsonObject: Any {
         switch self {
         case .arr(let a):
-            return a.map { MJ($0).jsonObject}
+            return a.map { JSON($0).jsonObject}
         case .dict(let d):
-            return d.mapValues {MJ($0).jsonObject}
+            return d.mapValues {JSON($0).jsonObject}
         case .raw(let r):
             return r
         case .null:
-            return MJ.nullString
+            return JSON.nullString
         default:
             return [String: String]()
         }
     }
+    
     func val<T>() -> T where T: Initable {
         switch self {
         case .raw(let v):
@@ -309,7 +306,7 @@ public extension MagicJSON {
     }
 }
 
-extension MagicJSON: CustomStringConvertible {
+extension JSON: CustomStringConvertible {
     public var description: String {
         switch self {
         case .arr(let a):
@@ -319,7 +316,7 @@ extension MagicJSON: CustomStringConvertible {
         case .empty:
             return "empty"
         case .null:
-            return MJ.nullString
+            return JSON.nullString
         case .raw(let u):
             return String(describing: u)
         }

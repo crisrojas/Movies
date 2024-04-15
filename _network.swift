@@ -55,33 +55,21 @@ typealias Completion<T> = (Result<T, Error>) -> Void
 
 protocol NetworkGetter {}
 extension NetworkGetter {
-    func fetchData(url: String, completion: @escaping Completion<Data>) {
-        guard let url = URL(string: url) else { return }
-
-        URLSession.shared.dataTask(with: url) { data, _, error in
-            guard let data = data, error == nil else {
-                print("Error fetching data: \(error?.localizedDescription ?? "Unknown error")")
-                completion(.failure(error!))
-                return
-            }
-            
-            completion(.success(data))
-            dp(url.absoluteString + ":")
-            dp(data.asString)
-            
-        }.resume()
+    func fetchData(url: URL) async throws -> Data {
+        let (data, _) = try await URLSession.shared.data(from: url)
+        return data
     }
 }
 
 import SwiftUI
 
-enum ResourceState {
+enum JsonState {
     case loading
-    case success(MJ)
+    case success(JSON)
     case error(String)
 }
 
-extension ResourceState {
+extension JsonState {
     var isSuccess: Bool {
         switch self {
         case .success: return true
@@ -89,25 +77,25 @@ extension ResourceState {
         }
     }
     
-    var data: MJ? {
+    var data: JSON? {
         switch self {
         case .success(let data): return data
         default: return nil
         }
     }
     
-    mutating func appendData(_ newData: MJ, keyPath: String) {
+    mutating func appendData(_ newData: JSON, keyPath: String) {
         guard let data else { return }
         let finalData = data[keyPath].array + newData[keyPath].array
         let anyArray: [Any] = finalData.map { $0.jsonObject }
         let jsonObject: [String: Any] = [keyPath: anyArray]
-        let magicJSON = MagicJSON.dict(jsonObject)
+        let magicJSON = JSON.dict(jsonObject)
         self = .success(magicJSON)
     }
 }
 
-extension ResourceState {
-    init(from result: Result<MJ, Error>) {
+extension JsonState {
+    init(from result: Result<JSON, Error>) {
         switch result {
         case .success(let data): self = .success(data)
         case .failure(let error): self = .error(error.localizedDescription)
@@ -115,39 +103,117 @@ extension ResourceState {
     }
 }
 
-struct JSON<T: View>: View, NetworkGetter {
+struct AsyncJSON<C: View, P: View, E: View>: View {
+    
+    @State var state = JsonState.loading
+    
+    let url: URL
+    let keyPath: String?
+    
+    @ViewBuilder var content: (JSON) -> C
+    @ViewBuilder var placeholder: () -> P
+    @ViewBuilder var error: (String) -> E
+    
+    init(
+        url: URL,
+        keyPath: String? = "results",
+        @ViewBuilder content: @escaping (JSON) -> C,
+        @ViewBuilder placeholder: @escaping () -> P = {ProgressView()},
+        @ViewBuilder error: @escaping (String) -> E = {Text($0)}
+    ) {
+        self.url = url
+        self.keyPath = keyPath
+        self.content = content
+        self.placeholder = placeholder
+        self.error = error
+    }
+    
+    // If specified keyPath for json, returns json object for that path
+    // Otherwise returns the whole json
+    func result(_ json: JSON) -> JSON {
+        keyPath == nil ? json : json[keyPath!]
+    }
+    
+    func mapContent(_ data: Data) -> C { content(result(JSON(data: data))) }
+
+    var body: some View {
+        AsyncData(
+            url: url,
+            content: mapContent,
+            placeholder: placeholder,
+            error: error
+        )
+    }
+}
+
+// https://stackoverflow.com/questions/69214543/how-can-i-add-caching-to-asyncimage
+// @todo: handle errors
+struct AsyncImage<C: View, P: View>: View {
+    var url: URL?
+    @ViewBuilder var content: (Image) -> C
+    @ViewBuilder var placeholder: () -> P
+    @State var image: Image? = nil
+
+    var body: some View {
+        if let image {
+            content(image)
+        } else {
+            placeholder()
+                .task { image = await downloadPhoto() }
+        }
+    }
+    
+    private func downloadPhoto() async -> Image? {
+        do {
+            guard let url else { return nil }
+            // @todo: is this really necessary?
+            if let cache = URLCache.shared.cachedResponse(for: .init(url: url))?.data {
+                return UIImage(data: cache)?.image()
+            } else {
+                let (data, response) = try await URLSession.shared.data(from: url)
+                URLCache.shared.storeCachedResponse(.init(response: response, data: data), for: .init(url: url))
+                return UIImage(data: data)?.image()
+            }
+        } catch {
+            // @todo: handle errors
+            print("Error downloading: \(error)")
+            return nil
+        }
+    }
+}
+
+
+struct AsyncData<C: View, P: View, E: View>: View, NetworkGetter {
+    
+    enum ResourceState {
+        case loading
+        case success(Data)
+        case error(String)
+    }
     
     @State var state = ResourceState.loading
     
     let url: URL
-    let keyPath: String?
-    @ViewBuilder var closure: (MJ) -> T
     
-    init(_ url: URL, keyPath: String? = "results", @ViewBuilder closure: @escaping (MJ) -> T) {
-        self.url = url
-        self.keyPath = keyPath
-        self.closure = closure
-    }
+    @ViewBuilder var content: (Data) -> C
+    @ViewBuilder var placeholder: () -> P
+    @ViewBuilder var error: (String) -> E
     
-    func result(_ mj: MJ) -> MJ {
-        keyPath == nil ? mj : mj[keyPath!]
-    }
-
     var body: some View {
         switch state {
-        case .loading: ProgressView().onAppear(perform: fetchData)
-        case .success(let data): closure(result(data))
+        case .loading: loading()
+        case .success(let data): content(data)
         case .error(let error): Text(error)
         }
     }
     
-    private func fetchData() {
-        fetchData(url: url.absoluteString) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let data): state = .success(MJ(data: data))
-                case .failure(let error): state = .error(error.localizedDescription)
-                }
+    func loading() -> some View {
+        placeholder().task {
+            do {
+                let data = try await fetchData(url: url)
+                state = .success(data)
+            } catch {
+                state = .error(error.localizedDescription)
             }
         }
     }

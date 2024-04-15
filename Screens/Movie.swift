@@ -8,10 +8,10 @@
 import SwiftUI
 
 struct Movie: View, NetworkGetter {
-    @StateObject var globals = tabStates
+    @StateObject var globals = Globals.tabState
     @StateObject var favorites = FileBase.favorites
     
-    let props: MJ
+    let props: JSON
     var body: some View {
         VStack {
             Header(props: props) * {
@@ -25,7 +25,7 @@ struct Movie: View, NetworkGetter {
         .horizontal(.s6)
         .scrollify()
         .background(background.fullScreen())
-        .onAppear(perform: getTrailerURL)
+        .task { await getTrailerURL() }
         .onDisappear(perform: { globals.videoURL = nil })
     }
     
@@ -38,16 +38,12 @@ struct Movie: View, NetworkGetter {
         }
     }
     
-    func getTrailerURL() {
-        fetchData(url: TmdbApi.videos(id: props.id.intValue).absoluteString) { result in
-            switch result {
-            case .success(let data):
-                let item = MJ(data: data).results.array.first
-                guard let key = item?.key.stringValue else { return }
-                DispatchQueue.main.async {
-                    globals.videoURL = URL(string: "https://youtube.com/watch?=\(key)")
-                }
-            case .failure(_): break
+    func getTrailerURL() async {
+        let url = TmdbApi.videos(id: props.id.intValue)
+        if let data = try? await fetchData(url: url) {
+            let first = JSON(data: data).results.array.first
+            if let key = first?.key.stringValue {
+                globals.videoURL = youtubeURL(key: key)
             }
         }
     }
@@ -57,7 +53,7 @@ struct Movie: View, NetworkGetter {
     }
     
     func castSection() -> some View {
-        JSON(TmdbApi.credits(id: props.id.intValue), keyPath: "cast") {
+        AsyncJSON(url: TmdbApi.credits(id: props.id.intValue), keyPath: "cast") {
             if $0.array.isNotEmpty {
                 Cast(props: $0)
             }
@@ -110,9 +106,11 @@ extension Movie {
         
         var actions: some View {
             VStack(spacing: .s4) {
-                Image(systemName: "heart.fill").opacity(isFavorite ? 1 : 0.3).onTap {
-                    toggleFavorite()
-                }
+                Image(systemName: "heart.fill")
+                    .opacity(isFavorite ? 1 : 0.3)
+                    .onTap {
+                        toggleFavorite()
+                    }
                 .foregroundColor(isFavorite ? .red600 : theme.textPrimary)
                 .animation(.easeInOut, value: isFavorite)
                 Image(systemName: "star.fill").opacity(0.3).onTap { }
@@ -140,7 +138,7 @@ private extension Movie.Header {
 
 
 extension Movie.Header {
-    init(props: MJ) {
+    init(props: JSON) {
         id = props.id.intValue
         title = props.title
         voteAverage = props.vote_average.doubleValue
@@ -153,7 +151,7 @@ extension Movie.Header {
 // MARK: - InfoStack
 extension Movie {
     struct InfoStack: View {
-        let props: MJ
+        let props: JSON
         
         var duration: String {
             guard props.runtime.intValue > 0 else {
@@ -230,7 +228,7 @@ extension Movie {
 extension Movie {
     struct StoryLine: View {
         @Environment(\.theme) var theme: Theme
-        let props: MJ
+        let props: JSON
         var body: some View {
             VStack(
                 alignment: .leading,
@@ -257,7 +255,7 @@ extension Movie {
 extension Movie {
     struct Cast: View {
         @Environment(\.theme) var theme: Theme
-        let props: MJ
+        let props: JSON
         
         var body: some View {
             
@@ -308,11 +306,13 @@ extension Movie {
                 .height(60)
                 .cornerRadius(12)
                 .opacity(0.3)
-                .overlay(ProgressView())
-            
+                .overlay(Text(randomEmoji()))
+        }
+        
+        func randomEmoji() -> String {
+            ["🤓", "😎","🥸","🧐","🤠"][Int.random(in: 0...4)]
         }
     }
-
 }
 
 // MARK: - Background
