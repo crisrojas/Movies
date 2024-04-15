@@ -119,7 +119,13 @@ extension View {
         NavigationView { self }
     }
     
-    func onTap<Destination: View>(navigateTo destination: Destination) -> some View {
+    func onTap<D: View>(navigateTo destination: () -> D) -> some View {
+        NavigationLink(destination: destination()) {
+            self
+        }
+    }
+    
+    func onTap<D: View>(navigateTo destination: D) -> some View {
         NavigationLink(destination: destination) {
             self
         }

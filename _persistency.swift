@@ -16,10 +16,10 @@ enum FileBase {
 
 final class FileResource: ObservableObject {
 
-    // @todo: Find a better way of preventing calling persist()
-    var endedInitialization = false
-    @Published var data = JSON.arr([]) {
-        didSet { if endedInitialization { persist() } }
+    // Prevents writing on init
+    var isInitializing = true
+    @Published var data = JSON.array([]) {
+        didSet { if !isInitializing { persist() } }
     }
     
     var items: [JSON] {data.array}
@@ -28,7 +28,7 @@ final class FileResource: ObservableObject {
     init(_ path: String) {
         self.path = path + ".txt"
         data = read()
-        endedInitialization = true
+        isInitializing = false
     }
     
     func contains(_ itemId: String) -> Bool {read(id: itemId) != nil}
@@ -36,18 +36,18 @@ final class FileResource: ObservableObject {
     func read() -> JSON {
         do {
             let data = try Data(contentsOf: fileURL())
-            return JSON(data: data)
+            return try JSON(data: data)
         } catch {
             dp("Error reading file: \(error)")
-            return .arr([])
+            return .array([])
         }
     }
     
-    func read(id: String) -> JSON? {data.array.first(where: {$0.id == id})}
+    func read(id: String) -> JSON? {data.array.first(where: {$0.id.string == id})}
     
     func add(_ item: JSON) {
         let new = data.array + [item]
-        data = .arr(new)
+        data = .array(new)
     }
     
     func delete(_ item: JSON) {
@@ -55,7 +55,7 @@ final class FileResource: ObservableObject {
         if let index = array.firstIndex(where: {$0.id == item.id}) {
             array.remove(at: index)
         }
-        data = .arr(array)
+        data = .array(array)
     }
     
     func persist() {
@@ -63,7 +63,7 @@ final class FileResource: ObservableObject {
             dp("Failed to encode MagicJSON")
             return
         }
-        
+
         do {
             try data.write(to: fileURL())
             dp("Successfully wrote to \(path)")
@@ -72,8 +72,7 @@ final class FileResource: ObservableObject {
         }
     }
     
-    func destroy() { }
-    
+    func destroy() {data = .array()}
     
     func fileURL() throws -> URL {
         try FileManager.default

@@ -44,39 +44,21 @@ struct Carousel<Content: View>: View {
     }
 }
 
-struct Carousel_Identifiable<Content: View, T: Identifiable>: View {
-    
-    let model: [T]
-    let spacing: CGFloat
-    let content: (T) -> Content
-    
-    var body: some View {
-        
-        HStack(spacing: spacing) {
-            ForEach(model, id: \.id) { item in
-                content(item)
-            }
-        }
-        .scrollify(.horizontal)
-    }
-}
-
 enum TwoColumnsGrid {
-    
     
     static let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 2)
     
-    static func from<Content: View>(_ items: JSON, content: @escaping (JSON) -> Content) -> some View {
-        return LazyVGrid(columns: columns) {
+    static func from<Content: View>(_ items: JSON, spacing: CGFloat? = nil, content: @escaping (JSON) -> Content) -> some View {
+        return LazyVGrid(columns: columns, spacing: spacing) {
             
-            ForEach(items.array, id: \.id.string) { item in
+            ForEach(items.array, id: \.self) { item in
                 content(item)
             }
         }
     }
     
-    static func from<Content: View, T: Identifiable>(_ items: [T], content: @escaping (T) -> Content) -> some View {
-        return LazyVGrid(columns: columns) {
+    static func from<Content: View, T: Identifiable>(_ items: [T], spacing: CGFloat? = nil, content: @escaping (T) -> Content) -> some View {
+        return LazyVGrid(columns: columns, spacing: spacing) {
             
             ForEach(items) { item in
                 content(item)
@@ -98,10 +80,10 @@ struct DefaultBackground: View {
     }
 }
 
-struct Card: View {
+struct Backdrop: View {
     @Environment(\.theme) var theme
     let image: String?
-    let title: String?
+    let title: String
     let genres: String?
     
     var body: some View {
@@ -109,17 +91,14 @@ struct Card: View {
         AsyncImage(url: image?.tmdbImageURL) { image in
             image
                 .resizable()
-                .width(350)
-                .height(200)
                 .aspectRatio(contentMode: .fill)
                 .overlay(linearGradient)
-                .overlay(titleAndGenres)
-                .cornerRadius(20)
+                .overlay(titleAndGenres, alignment: .bottomLeading)
         } placeholder: {
             theme.imgPlaceholder
-                .cornerRadius(20)
                 .overlay(ProgressView())
         }
+        .cornerRadius(.s5)
         .width(350)
         .height(200)
     }
@@ -132,7 +111,7 @@ struct Card: View {
     )
 }
 
-private extension Card {
+private extension Backdrop {
     
     var linearGradient: some View {
         
@@ -149,28 +128,32 @@ private extension Card {
     var titleAndGenres: some View {
         
         VStack(alignment: .leading) {
-            /// @todo: Make model return a non optional String
-            Text(title ?? "Unknown title")
-                .font(.system(.title, design: .rounded))
-                .fontWeight(.bold)
+            Text(title)
+                .font(.system(.title2, design: .rounded))
+                .fontWeight(.semibold)
+                .frame(width: 350 - .s8, alignment: .leading)
+                .lineLimit(1)
                 .foregroundColor(Color.white)
-                .multilineTextAlignment(.leading)
             
-            /// @todo this is: always nil
-            if let safeGenres = genres {
-                Text(safeGenres)
-                    .font(.system(.caption, design: .rounded))
+            if let genres {
+                Text(genres)
+                    .font(.system(.callout, design: .rounded))
                     .fontWeight(.heavy)
                     .foregroundColor(Color.white)
-                    .multilineTextAlignment(.leading)
+                    .lineLimit(1)
                     .opacity(0.6)
-                    .top(8)
             }
             
         }
-        .leading(.s6)
-        .offset(y: 40)
-        .alignX(.leading)
+        .offset(x: .s4, y: -.s4)
+    }
+}
+
+extension Backdrop {
+    init(props: JSON) {
+        self.title = props.title.stringValue
+        self.image = props.backdrop_path.string
+        self.genres = props.genre_ids.array.map { $0.stringValue }.joined(separator: ", ") // @todo
     }
 }
 

@@ -8,7 +8,7 @@
 import Foundation
 
 func youtubeURL(key: String) -> URL? {
-    URL(string: "https://youtube.com/watch?=\(key)")
+    URL(string: "https://youtube.com/watch?v=\(key)")
 }
 
 infix operator *: AdditionPrecedence

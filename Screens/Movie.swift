@@ -16,24 +16,23 @@ struct Movie: View, NetworkGetter {
     var body: some View {
         VStack {
             Header(props: props) * {
-                $0.isFavorite = favorites.contains(props.id)
+                $0.isFavorite = favorites.contains(props.id.string ?? "")
                 $0.toggleFavorite = toggleFavorite
             }
-//            InfoStack(props: props).top(.s6)
-//            StoryLine(props: props).top(.s9)
-            castSection()
-            Text("hello")
+            InfoStack(props: props).top(.s6)
+            StoryLine(props: props).top(.s9)
+            castSection().vertical(.s9)
         }
         .horizontal(.s6)
         .scrollify()
         .background(background.fullScreen())
-//        .onAppear { getTrailerURL() }
-//        .onDisappear { setTabVideoURL(nil) }
+        .task { await getTrailerURL() }
+        .onDisappear { setTabVideoURL(nil) }
     }
     
     
     func toggleFavorite() {
-        if favorites.contains(props.id) {
+        if favorites.contains(props.id.stringValue) {
             favorites.delete(props)
         } else {
             favorites.add(props)
@@ -43,7 +42,7 @@ struct Movie: View, NetworkGetter {
     func getTrailerURL() async {
         let url = TMDb.videos(id: props.id.intValue)
         if let (data, _) = try? await fetchData(url: url) {
-            let first = JSON(data: data).results.array.first
+            let first = try? JSON(data: data).results.array.first
             if let key = first?.key.stringValue {
                 setTabVideoURL(youtubeURL(key: key))
             }
@@ -51,32 +50,17 @@ struct Movie: View, NetworkGetter {
     }
     
     var background: Background {
-        Background(url: props.backdrop_path.tmdbImageURL)
+        Background(url: props.backdrop_path.string?.tmdbImageURL)
     }
     
     func castSection() -> some View {
-        AsyncDecodable(url: TMDb.credits(id: props.id.intValue)) { (r: CastResponse) in
-            CastView(cast: r.cast)
+        AsyncJSON(url: TMDb.credits(id: props.id.int ?? 0)) { json in
+            Cast(props: json.cast).horizontal(-.s6)
         }
     }
 }
 
-extension Movie {
-    struct CastView: View {
-        let cast: [MovieCast]
-        var body: some View {
-            Carousel_Identifiable(model: cast, spacing: .base) { item in
-                Movie.Cast.ActorAvatar(
-                    path: item.profile_path,
-                    id: item.credit_id
-                )
-                .onTapScaleDown()
-                //            .leading(item.credit_id  == cast.first?.credit_id ? .s6 : 0)
-                //            .trailing(item.credit_id == cast.last?.credit_id ? .s6 : 0)
-            }
-        }
-    }
-}
+
 // MARK: - Header
 extension Movie {
     struct Header: View {
@@ -113,7 +97,7 @@ extension Movie {
                 
                 Text(voteAverageRounded)
                     .font(.system(size: 38, weight: .black, design: .rounded))
-                    .foregroundColor(theme.textPrimary)
+                    .foregroundColor(theme.textSecondary)
                     .top(.s3)
                 
                 Text(ratingStars)
@@ -159,10 +143,10 @@ private extension Movie.Header {
 extension Movie.Header {
     init(props: JSON) {
         id = props.id.intValue
-        title = props.title
+        title = props.title.stringValue
         voteAverage = props.vote_average.doubleValue
-        posterURL = props.poster_path.tmdbImageURL
-        trailerURL = props.trailerURL.url
+        posterURL = props.poster_path.string?.tmdbImageURL
+        trailerURL = nil//props.trailerURL.url?
         isFavorite = false
     }
 }
@@ -181,7 +165,7 @@ extension Movie {
         }
         
         var year: String {
-            guard let releaseDate = dateFormatter.date(from: props.release_date) else {
+            guard let releaseDate = dateFormatter.date(from: props.release_date.stringValue) else {
                 return "N/A"
             }
             return yearFormatter.string(from: releaseDate)
@@ -218,7 +202,7 @@ extension Movie {
                 Info(title: "Language", value: props.original_language.string ?? "N/A")
                 Spacer ()
                 
-                Info(title: "Vote count", value: "\(props.vote_count)")
+                Info(title: "Vote count", value: "\(props.vote_count.intValue)")
             }
         }
     }
@@ -234,9 +218,9 @@ extension Movie {
                 Text(title)
                     .foregroundColor(theme.textPrimary)
                     .fontWeight(.heavy)
-                Text(value)
+                Text(value.uppercased())
                     .fontWeight(.heavy)
-                    .foregroundColor(theme.textPrimary)
+                    .foregroundColor(theme.textSecondary)
                     .padding(.top, 5)
             }.font(.footnote)
         }
@@ -253,16 +237,15 @@ extension Movie {
                 alignment: .leading,
                 spacing: .s5
             ) {
-
                 Text("Storyline")
                     .font(.system(.headline, design: .rounded))
                     .fontWeight(.heavy)
                     .foregroundColor(theme.textPrimary)
 
-                Text(props.overview)
+                Text(props.overview.stringValue)
                     .font(.system(.footnote, design: .rounded))
                     .fontWeight(.bold)
-                    .foregroundColor(theme.textPrimary)
+                    .foregroundColor(theme.textSecondary)
             }
             .alignX(.leading)
         }
@@ -298,21 +281,19 @@ extension Movie {
                     .font(.system(.headline, design: .rounded))
                     .fontWeight(.heavy)
                     .foregroundColor(theme.textPrimary)
+                    .leading(.s6)
                 
                 Carousel(model: props, spacing: .s2) { item in
                     ActorAvatar(
-                        path: item.profile_path,
-                        id: item.credit_id
+                        path: item.profile_path.string,
+                        id: item.credit_id.string ?? ""
                     )
                     .onTapScaleDown()
                     .leading(item.id == props.first?.id ? .s6 : 0)
                     .trailing(item.id == props.last?.id ? .s6 : 0)
                 }
-                .horizontal(-.s6)
             }
         }
-        
-       
     }
 }
 
