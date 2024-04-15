@@ -63,13 +63,11 @@ struct Tabbar: View {
             }
         }
     }
-    
+
     var customTabbar: some View {
         VStack {
             HStack {
-                Spacer()
                 ForEach(Tab.allCases, id: \.self) { tab in
-                    Spacer()
                     if tab != .button {
                         defaultItem(tab)
                     } else {
@@ -83,10 +81,7 @@ struct Tabbar: View {
                         }
                         .buttonStyle(ScaleDownButtonStyle())
                     }
-                    
-                    Spacer()
                 }
-                Spacer()
             }
             .height(.s14)
            
@@ -101,6 +96,9 @@ struct Tabbar: View {
         Item(name: tab.rawValue, systemImage: tab.systemName)
             .opacity(states.selectedTab == tab ? 1 : 0.3)
             .foregroundColor(theme.textPrimary)
+            .height(.s14)
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
             .onTap { states.selectedTab = tab }
             .buttonStyle(ScaleDownButtonStyle())
     }
