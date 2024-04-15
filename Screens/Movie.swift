@@ -41,7 +41,7 @@ struct Movie: View, NetworkGetter {
     
     func getTrailerURL() async {
         let url = TMDb.videos(id: props.id.intValue)
-        if let data = try? await fetchData(url: url) {
+        if let (data, _) = try? await fetchData(url: url) {
             let first = JSON(data: data).results.array.first
             if let key = first?.key.stringValue {
                 setTabVideoURL(youtubeURL(key: key))

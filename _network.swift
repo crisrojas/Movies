@@ -55,9 +55,11 @@ typealias Completion<T> = (Result<T, Error>) -> Void
 
 protocol NetworkGetter {}
 extension NetworkGetter {
-    func fetchData(url: URL) async throws -> Data {
-        let (data, _) = try await URLSession.shared.data(from: url)
-        return data
+    func fetchData(url: URL, completion: @escaping Completion<Data>) {
+        
+    }
+    func fetchData(url: URL) async throws -> (Data, URLResponse) {
+        try await URLSession.shared.data(from: url)
     }
 }
 
@@ -150,7 +152,7 @@ struct AsyncJSON<C: View, P: View, E: View>: View {
 
 // https://stackoverflow.com/questions/69214543/how-can-i-add-caching-to-asyncimage
 // @todo: handle errors
-struct AsyncImage<C: View, P: View>: View {
+struct AsyncImage<C: View, P: View>: View, NetworkGetter {
     var url: URL?
     @ViewBuilder var content: (Image) -> C
     @ViewBuilder var placeholder: () -> P
@@ -172,7 +174,7 @@ struct AsyncImage<C: View, P: View>: View {
             if let cache = URLCache.shared.cachedResponse(for: .init(url: url))?.data {
                 return UIImage(data: cache)?.image()
             } else {
-                let (data, response) = try await URLSession.shared.data(from: url)
+                let (data, response) = try await fetchData(url: url)
                 URLCache.shared.storeCachedResponse(.init(response: response, data: data), for: .init(url: url))
                 return UIImage(data: data)?.image()
             }
@@ -211,7 +213,7 @@ struct AsyncData<C: View, P: View, E: View>: View, NetworkGetter {
     func loading() -> some View {
         placeholder().task {
             do {
-                let data = try await fetchData(url: url)
+                let (data, _) = try await fetchData(url: url)
                 state = .success(data)
             } catch {
                 state = .error(error.localizedDescription)

@@ -36,7 +36,7 @@ struct Movies: View, NetworkGetter {
     
     func loadData() async {
         do {
-            let data = try await fetchData(url: currentURL)
+            let (data, _) = try await fetchData(url: currentURL)
             let json = JSON(data: data)
             if state.isSuccess {
                 state.appendData(json, keyPath: "results")
