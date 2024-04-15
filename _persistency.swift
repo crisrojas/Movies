@@ -34,7 +34,7 @@ final class FileResource: ObservableObject {
             let data = try Data(contentsOf: fileURL())
             return JSON(data: data)
         } catch {
-            print("Error reading file: \(error)")
+            dp("Error reading file: \(error)")
             return .arr([])
         }
     }
@@ -56,15 +56,15 @@ final class FileResource: ObservableObject {
     
     func persist() {
         guard let data = try? data.encode() else {
-            print("Failed to encode MagicJSON")
+            dp("Failed to encode MagicJSON")
             return
         }
         
         do {
             try data.write(to: fileURL())
-            print("Successfully wrote to \(path)")
+            dp("Successfully wrote to \(path)")
         } catch {
-            print("Error writing file: \(error)")
+            dp("Error writing file: \(error)")
         }
     }
     

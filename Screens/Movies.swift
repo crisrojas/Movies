@@ -19,7 +19,14 @@ struct Movies: View, NetworkGetter {
         url.appendingQueryItem("page", value: page)
     }
     
+    @State var search = ""
+    
     var body: some View {
+        _body//.searchable(text: $search)
+    }
+    
+    @ViewBuilder
+    var _body: some View {
         switch state {
         case .loading: ProgressView().task { await loadData() }
         case .success(let data): successView(data)
@@ -47,14 +54,7 @@ struct Movies: View, NetworkGetter {
             ProgressView()
         }
     }
-    
-    func cellTask(_ data: [JSON], movie: JSON) async {
-        if movie.id == data.last?.id {
-            page += 1
-            await loadData()
-        }
-    }
-    
+
     func successView(_ props: JSON) -> some View {
         let data = props.results.array
         return List(
@@ -62,9 +62,41 @@ struct Movies: View, NetworkGetter {
             cellTask: { await cellTask(data, movie: $0) }
         )
     }
+    
+    
+    func cellTask(_ data: [JSON], movie: JSON) async {
+        if movie.id == data.last?.id {
+            page += 1
+            await loadData()
+        }
+    }
 }
 
 extension Movies {
+    struct List: View {
+        
+        let data: [JSON]
+        var cellTask: (JSON) async -> Void = { _ in }
+        
+        typealias List = SwiftUI.List
+        
+        var body: some View {
+            List(data, id: \.id) { movie in
+                Cell(props: movie)
+                    .onTap(navigateTo: Movie(props: movie))
+                    .task { await cellTask(movie) }
+            }
+            .modify {
+                if #available(iOS 16.0, *) {
+                    $0.scrollContentBackground(.hidden)
+                }
+            }
+            .background(DefaultBackground().fullScreen())
+        }
+    }
+}
+
+extension Movies.List {
     struct Cell: View {
         
         @Environment(\.theme) var theme: Theme
@@ -111,29 +143,7 @@ extension Movies {
     }
 }
 
-
-extension Movies {
-    struct List: View {
-        let data: [JSON]
-        var cellTask: (JSON) async -> Void = { _ in }
-        var body: some View {
-            SwiftUI.List(data, id: \.id) { movie in
-                Cell(props: movie)
-                    .onTap(navigateTo: Movie(props: movie))
-                    .task { await cellTask(movie) }
-            }
-            .modify {
-                if #available(iOS 16.0, *) {
-                    $0.scrollContentBackground(.hidden)
-                }
-            }
-            .background(DefaultBackground().fullScreen())
-        }
-    }
-}
-
-
-extension Movies.Cell {
+extension Movies.List.Cell {
     init(props: JSON)  {
         title = props.title
         posterURL = props.poster_path.movieImageURL

@@ -3,7 +3,6 @@
     - search/filter on saved lists
     - filter by category
     - pin
+- Empty states
 - search filter
-- statusbar
 - Tips
-- inject global state through environmentObject...

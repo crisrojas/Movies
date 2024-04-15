@@ -7,6 +7,30 @@
 
 import Foundation
 
+enum Inset {
+    case top
+    case bottom
+    case left
+    case right
+}
+
+extension CGFloat {
+//    static let statusBarHeight = (UIApplication.shared.connectedScenes.first as? UIWindowScene)?.statusBarManager?.statusBarFrame.height
+    
+    static func safeAreaInset(_ inset: Inset) -> Self? {
+      
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else {
+            return nil
+        }
+        
+        switch inset {
+        case .top: return windowScene.windows.first?.safeAreaInsets.top
+        case .bottom: return windowScene.windows.first?.safeAreaInsets.bottom
+        case .left: return windowScene.windows.first?.safeAreaInsets.left
+        case .right: return windowScene.windows.first?.safeAreaInsets.right
+        }
+    }
+}
 extension Collection {
     var isNotEmpty: Bool { !isEmpty }
 }

@@ -81,16 +81,17 @@ struct Tabbar: View {
                                 states.selectedTab = tab
                             }
                         }
+                        .buttonStyle(ScaleDownButtonStyle())
                     }
                     
                     Spacer()
                 }
                 Spacer()
             }
-            .frame(height: .s14)
+            .height(.s14)
            
             Rectangle()
-                .frame(height: safeAreaInsetsBottom)
+                .height(.safeAreaInset(.bottom))
                 .foregroundColor(theme.tabbarBg)
         }
         .background(theme.tabbarBg)
@@ -101,6 +102,7 @@ struct Tabbar: View {
             .opacity(states.selectedTab == tab ? 1 : 0.3)
             .foregroundColor(theme.textPrimary)
             .onTap { states.selectedTab = tab }
+            .buttonStyle(ScaleDownButtonStyle())
     }
     
     func presentVideo(url: URL) {
@@ -108,14 +110,6 @@ struct Tabbar: View {
         let safariViewController = SFSafariViewController(url: url)
         UIApplication.shared.windows.first?.rootViewController?.present(safariViewController, animated: true, completion: nil)
         
-    }
-    
-    var safeAreaInsetsBottom: CGFloat {
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else {
-            return 0
-        }
-        
-        return windowScene.windows.first?.safeAreaInsets.bottom ?? 0
     }
 }
 
@@ -142,7 +136,6 @@ extension Tabbar {
                 .size(.s16)
                 .foregroundColor(color)
                 .shadow(color: color.opacity(0.5), radius: 10)
-                .animation(.easeInOut, value: tabState.selectedTab)
                 .overlay(symbol)
                 .background(
                     Circle()

@@ -37,17 +37,18 @@ extension View {
     
     
     // frame
-    func size(_ value: CGFloat) -> some View {
+    func size(_ value: CGFloat?) -> some View {
         self.frame(width: value, height: value)
     }
     
-    func width(_ value: CGFloat) -> some View {
+    func width(_ value: CGFloat?) -> some View {
         self.frame(width: value)
     }
     
-    func height(_ value: CGFloat) -> some View {
+    func height(_ value: CGFloat?) -> some View {
         self.frame(height: value)
     }
+    
     
     /// Returns a view taking the whole screen width & height available.
     /// Ignores safe area
@@ -59,14 +60,31 @@ extension View {
     }
     
     // wrappers
-    func scrollify(_ axis: Axis.Set = .vertical) -> some View {
+    func scrollify(_ axis: Axis.Set = .vertical) -> ScrollView<Self> {
         
         ScrollView(axis, showsIndicators: false) {
             self
         }
     }
     
-    func navigationify() -> some View {
+    func scrollify(_ axis: Axis.Set = .vertical, onScroll: @escaping (CGFloat) -> Void) -> some View {
+        ScrollView(axis, showsIndicators: false) {
+            self.background(
+                GeometryReader {
+                    Color.clear.preference(
+                        key: ViewOffsetKey.self,
+                        value: -$0.frame(in: .named("scroll")).origin.y
+                    )
+                }
+            )
+            .onPreferenceChange(ViewOffsetKey.self) { offset in
+                onScroll(offset)
+            }
+        }
+        .coordinateSpace(name: "scroll")
+    }
+    
+    func navigationify() ->  NavigationView<Self> {
         NavigationView { self }
     }
     
@@ -108,6 +126,29 @@ extension View {
 }
 
 extension View {
+    // Optional so we can conditionally use it
+    func statusBarBackground<Background: View>(_ background: Background) -> some View {
+        self.overlay(alignment: .top) {
+            Color.clear
+                .background(background)
+                .ignoresSafeArea(edges: .top)
+                .height(0)
+        }
+    }
+    
+    @ViewBuilder
+    func statusBarBackground(_ background: Material?) -> some View {
+            self.overlay(alignment: .top) {
+                Color.clear
+                    .background(background ?? .thinMaterial)
+                    .opacity(background != nil ? 1 : 0)
+                    .ignoresSafeArea(edges: .top)
+                    .height(0)
+            
+        }
+    }
+}
+extension View {
     @ViewBuilder
     func modify(@ViewBuilder _ transform: (Self) -> (some View)) -> some View {
         transform(self)
@@ -131,5 +172,14 @@ extension View {
         } else {
             self
         }
+    }
+}
+
+
+struct ViewOffsetKey: PreferenceKey {
+    typealias Value = CGFloat
+    static var defaultValue = CGFloat.zero
+    static func reduce(value: inout Value, nextValue: () -> Value) {
+        value += nextValue()
     }
 }

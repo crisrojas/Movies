@@ -176,7 +176,7 @@ struct AsyncImage<C: View, P: View>: View {
             }
         } catch {
             // @todo: handle errors
-            print("Error downloading: \(error)")
+            dp("Error downloading: \(error)")
             return nil
         }
     }

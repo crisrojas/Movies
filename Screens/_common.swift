@@ -15,7 +15,63 @@ struct ScaleDownButtonStyle: ButtonStyle {
     }
 }
 
+
+struct Carousel<Content: View>: View {
+    
+    let model: JSON
+    let spacing: CGFloat
+    let content: (JSON) -> Content
+    
+    var body: some View {
+        
+        HStack(spacing: spacing) {
+            ForEach(model.array, id: \.id) { item in
+                content(item)
+            }
+        }
+        .scrollify(.horizontal)
+    }
+}
+
+enum TwoColumnsGrid {
+    
+    
+    static let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 2)
+    
+    static func from<Content: View>(_ items: JSON, content: @escaping (JSON) -> Content) -> some View {
+        return LazyVGrid(columns: columns) {
+            
+            ForEach(items.array, id: \.id) { item in
+                content(item)
+            }
+        }
+    }
+    
+    static func from<Content: View, T: Identifiable>(_ items: [T], content: @escaping (T) -> Content) -> some View {
+        return LazyVGrid(columns: columns) {
+            
+            ForEach(items) { item in
+                content(item)
+            }
+        }
+    }
+}
+
+struct DefaultBackground: View {
+    @Environment(\.theme) var theme: Theme
+
+    var body: some View {
+        LinearGradient(
+            gradient: theme.gradient,
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        .ignoresSafeArea()
+    }
+}
+
 struct Card: View {
+    @Environment(\.theme) var theme
     let image: String?
     let title: String?
     let genres: String?
@@ -32,8 +88,7 @@ struct Card: View {
                 .overlay(titleAndGenres)
                 .cornerRadius(20)
         } placeholder: {
-            Rectangle()
-                .fill(Color.neutral200)
+            theme.imgPlaceholder
                 .cornerRadius(20)
                 .overlay(ProgressView())
         }
@@ -91,48 +146,6 @@ private extension Card {
     }
 }
 
-
-struct Carousel<Content: View>: View {
-    
-    let model: JSON
-    let spacing: CGFloat
-    let content: (JSON) -> Content
-    
-    var body: some View {
-        
-        HStack(spacing: spacing) {
-            ForEach(model.array, id: \.id) { item in
-                content(item)
-            }
-        }
-        .scrollify(.horizontal)
-    }
-}
-
-enum TwoColumnsGrid {
-    
-    
-    static let columns: [GridItem] = Array(repeating: .init(.flexible()), count: 2)
-    
-    static func from<Content: View>(_ items: JSON, content: @escaping (JSON) -> Content) -> some View {
-        return LazyVGrid(columns: columns) {
-            
-            ForEach(items.array, id: \.id) { item in
-                content(item)
-            }
-        }
-    }
-    
-    static func from<Content: View, T: Identifiable>(_ items: [T], content: @escaping (T) -> Content) -> some View {
-        return LazyVGrid(columns: columns) {
-            
-            ForEach(items) { item in
-                content(item)
-            }
-        }
-    }
-}
-
 struct GenreButton: View {
     let model: FeaturedGenre
     
@@ -151,17 +164,3 @@ struct GenreButton: View {
             .foregroundColor(.white)
     }
 }
-
-struct DefaultBackground: View {
-    @Environment(\.theme) var theme: Theme
-
-    var body: some View {
-        LinearGradient(
-            gradient: theme.gradient,
-            startPoint: .top,
-            endPoint: .bottom
-        )
-        .ignoresSafeArea()
-    }
-}
-

@@ -26,7 +26,7 @@ struct Movie: View, NetworkGetter {
         .scrollify()
         .background(background.fullScreen())
         .task { await getTrailerURL() }
-        .onDisappear(perform: { globals.videoURL = nil })
+        .onDisappear { globals.videoURL = nil }
     }
     
     
@@ -111,9 +111,12 @@ extension Movie {
                     .onTap {
                         toggleFavorite()
                     }
+                    .buttonStyle(ScaleDownButtonStyle())
                 .foregroundColor(isFavorite ? .red600 : theme.textPrimary)
                 .animation(.easeInOut, value: isFavorite)
-                Image(systemName: "star.fill").opacity(0.3).onTap { }
+                Image(systemName: "star.fill").opacity(0.3)
+                    .onTap { }
+                    .buttonStyle(ScaleDownButtonStyle())
             }
             .foregroundColor(theme.textPrimary)
             .offset(x: .s12)
@@ -126,7 +129,7 @@ private extension Movie.Header {
         AsyncImage(url: posterURL) { image in
             image.resizable()
         } placeholder: {
-            Color.neutral100
+            theme.imgPlaceholder
                 .overlay(ProgressView())
         }
         .cornerRadius(8)

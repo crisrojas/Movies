@@ -19,6 +19,7 @@ struct Schemer<Content: View>: View {
     }
 }
 
+
 // RawRepresentable conformance so we can persist to UserDefaults:
 extension ColorScheme: RawRepresentable {
     public var rawValue: String {
@@ -55,6 +56,8 @@ struct Theme: Equatable {
     var gradientFirst: Color = .teal600
     var gradientSecond: Color = .teal50
     
+    var imgPlaceholder: Color = .neutral200
+    
     var circleButtonDefault: Color = .teal400
     var circleButtonSecondary: Color = .orange400
     
@@ -73,6 +76,7 @@ struct Theme: Equatable {
         $0.tabbarBg = .black
         $0.gradientFirst = .teal900
         $0.gradientSecond = .black
+        $0.imgPlaceholder = .neutral800
     }
 }
 

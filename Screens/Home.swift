@@ -7,7 +7,7 @@ struct Home: View {
     // destroy the navigation hierarchy when navigatinng to a movie as
     // it modifies tabState (videoURL)
     var goToTab: (Tab) -> Void = { Globals.tabState.selectedTab = $0 }
-    
+    @State var showStatusBarBg = false
     var body: some View {
         VStack(spacing: 0) {
             "Hello Clark".body
@@ -29,7 +29,9 @@ struct Home: View {
             genresSection
             nowPlayingSection
         }
-        .scrollify()
+        .scrollify { showStatusBarBg = $0 >= 40 }
+        .statusBarBackground(showStatusBarBg ? .ultraThin : nil)
+        .animation(.easeInOut(duration: 0.4), value: showStatusBarBg)
         .background(DefaultBackground())
     }
     
@@ -63,6 +65,7 @@ struct Home: View {
         TwoColumnsGrid.from(FeaturedGenre.allCases) { item in
             GenreButton(model: item)
                 .onTap(navigateTo: Movies(url: TmdbApi.genre(id: item.id)))
+                .buttonStyle(ScaleDownButtonStyle())
         }
         .horizontal(.s6)
     }
@@ -107,7 +110,7 @@ private extension Home {
     
     
     var gridImagePlaceholder: some View {
-        Color.neutral300
+        theme.imgPlaceholder
             .frame(maxWidth: .infinity)
             .aspectRatio(210/297, contentMode: .fill)
             .overlay(ProgressView())
