@@ -36,7 +36,7 @@ extension Collection {
 }
 
 extension String {
-    var movieImageURL: URL? {
+    var tmdbImageURL: URL? {
         return URL(string: "https://image.tmdb.org/t/p/w500\(self)")
     }
 }

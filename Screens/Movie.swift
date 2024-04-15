@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct Movie: View, NetworkGetter {
-    @StateObject var globals = Globals.tabState
+    
     @StateObject var favorites = FileBase.favorites
+    var setTabVideoURL: (URL?) -> Void = { Globals.tabState.videoURL = $0 }
     
     let props: JSON
     var body: some View {
@@ -26,7 +27,7 @@ struct Movie: View, NetworkGetter {
         .scrollify()
         .background(background.fullScreen())
         .task { await getTrailerURL() }
-        .onDisappear { globals.videoURL = nil }
+        .onDisappear { setTabVideoURL(nil) }
     }
     
     
@@ -39,21 +40,21 @@ struct Movie: View, NetworkGetter {
     }
     
     func getTrailerURL() async {
-        let url = TmdbApi.videos(id: props.id.intValue)
+        let url = TMDb.videos(id: props.id.intValue)
         if let data = try? await fetchData(url: url) {
             let first = JSON(data: data).results.array.first
             if let key = first?.key.stringValue {
-                globals.videoURL = youtubeURL(key: key)
+                setTabVideoURL(youtubeURL(key: key))
             }
         }
     }
     
     var background: Background {
-        Background(url: props.backdrop_path.movieImageURL)
+        Background(url: props.backdrop_path.tmdbImageURL)
     }
     
     func castSection() -> some View {
-        AsyncJSON(url: TmdbApi.credits(id: props.id.intValue), keyPath: "cast") {
+        AsyncJSON(url: TMDb.credits(id: props.id.intValue), keyPath: "cast") {
             if $0.array.isNotEmpty {
                 Cast(props: $0)
             }
@@ -145,7 +146,7 @@ extension Movie.Header {
         id = props.id.intValue
         title = props.title
         voteAverage = props.vote_average.doubleValue
-        posterURL = props.poster_path.movieImageURL
+        posterURL = props.poster_path.tmdbImageURL
         trailerURL = props.trailerURL.url
         isFavorite = false
     }
@@ -249,7 +250,7 @@ extension Movie {
                     .foregroundColor(theme.textPrimary)
             }
             .alignX(.leading)
-            .top(30)
+            .top(.s7)
         }
     }
 }

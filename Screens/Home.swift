@@ -38,7 +38,7 @@ struct Home: View {
     @ViewBuilder
     var popularSection: some View {
         title("Popular movies")
-        AsyncJSON(url: TmdbApi.popular) { items in
+        AsyncJSON(url: TMDb.popular) { items in
             Carousel(model: items, spacing: .s6) { item in
                 Card(
                     image: item.backdrop_path,
@@ -64,7 +64,7 @@ struct Home: View {
         
         TwoColumnsGrid.from(FeaturedGenre.allCases) { item in
             GenreButton(model: item)
-                .onTap(navigateTo: Movies(url: TmdbApi.genre(id: item.id)))
+                .onTap(navigateTo: Movies(url: TMDb.genre(id: item.id)))
                 .buttonStyle(ScaleDownButtonStyle())
         }
         .horizontal(.s6)
@@ -73,7 +73,7 @@ struct Home: View {
     @ViewBuilder
     var nowPlayingSection: some View {
         title("Now playing")
-        AsyncJSON(url: TmdbApi.now_playing) { items in
+        AsyncJSON(url: TMDb.now_playing) { items in
             TwoColumnsGrid.from(items) { item in
                 poster(path: item.poster_path)
                     .onTap(navigateTo: Movie(props: item))
@@ -96,7 +96,7 @@ private extension Home {
     
     func poster(path: String) -> some View {
         
-        AsyncImage(url: path.movieImageURL) { image in
+        AsyncImage(url: path.tmdbImageURL) { image in
             image
                 .resizable()
                 .frame(maxWidth: .infinity)

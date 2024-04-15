@@ -146,7 +146,7 @@ extension Movies.List {
 extension Movies.List.Cell {
     init(props: JSON)  {
         title = props.title
-        posterURL = props.poster_path.movieImageURL
+        posterURL = props.poster_path.tmdbImageURL
         overview = props.overview
     }
 }

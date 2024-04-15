@@ -10,7 +10,7 @@ import SwiftUI
 struct Genres: View {
     
     var body: some View {
-        AsyncJSON(url: TmdbApi.genres, keyPath: "genres")  { genres in
+        AsyncJSON(url: TMDb.genres, keyPath: "genres")  { genres in
             List(genres.array, id: \.id) { genre in
                 Text(genre.name)
                     .onTap(navigateTo: list(genre.id.intValue))
@@ -25,6 +25,6 @@ struct Genres: View {
     }
     
     func list(_ id: Int) -> some View {
-        Movies(url: TmdbApi.genre(id: id))
+        Movies(url: TMDb.genre(id: id))
     }
 }

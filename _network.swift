@@ -13,7 +13,7 @@ func dp(_ msg: Any) {
     #endif
 }
 
-enum TmdbApi {
+enum TMDb {
     
     static let apiKey = "b5f1e193c3a2759a19f3f085f3dc2d7e"
 
@@ -181,7 +181,6 @@ struct AsyncImage<C: View, P: View>: View {
         }
     }
 }
-
 
 struct AsyncData<C: View, P: View, E: View>: View, NetworkGetter {
     

@@ -78,7 +78,7 @@ struct Card: View {
     
     var body: some View {
         
-        AsyncImage(url: image?.movieImageURL) { image in
+        AsyncImage(url: image?.tmdbImageURL) { image in
             image
                 .resizable()
                 .width(350)
