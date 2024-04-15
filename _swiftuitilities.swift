@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+// MARK: - Stacks
 // Remove default spacing of freaking SwiftUI on stacks...
 struct HStack<Content: View>: View {
     var alignment: VerticalAlignment = .center
@@ -21,6 +22,22 @@ struct HStack<Content: View>: View {
     }
 }
 
+// Remove default spacing of freaking SwiftUI on stacks...
+struct VStack<Content: View>: View {
+    var alignment: HorizontalAlignment = .center
+    var spacing: CGFloat = 0
+    @ViewBuilder var content: () -> Content
+    var body: some View {
+        SwiftUI.VStack(
+            alignment: alignment,
+            spacing: spacing,
+            content: content
+        )
+    }
+}
+
+
+// MARK: - View utilities
 extension View {
     
     // padding
@@ -120,7 +137,7 @@ extension View {
     
     func alignX(_ alignment: HorizontalAlignment) -> some View  {
         
-        HStack(spacing: 0) {
+        HStack {
             switch alignment {
             case .leading:
                 self

@@ -43,7 +43,7 @@ struct Tabbar: View {
     @Environment(\.theme) var theme
     
     var body: some View {
-        VStack(spacing: 0) {
+        VStack {
             tabs
             customTabbar
         }

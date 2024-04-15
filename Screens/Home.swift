@@ -9,7 +9,7 @@ struct Home: View {
     var goToTab: (Tab) -> Void = { Globals.tabState.selectedTab = $0 }
     @State var showStatusBarBg = false
     var body: some View {
-        VStack(spacing: 0) {
+        VStack {
             "Hello Clark".body
                 .font(.title2)
                 .fontWeight(.bold)

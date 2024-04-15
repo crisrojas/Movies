@@ -82,7 +82,7 @@ extension Movie {
         
         var body: some View {
             
-            VStack(spacing: 0) {
+            VStack {
                 
                 posterView
                     .overlay(actions, alignment: .trailing)
@@ -236,7 +236,7 @@ extension Movie {
         var body: some View {
             VStack(
                 alignment: .leading,
-                spacing: 20
+                spacing: .s5
             ) {
 
                 Text("Storyline")

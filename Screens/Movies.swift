@@ -118,7 +118,7 @@ extension Movies.List {
                 .width(70)
                 .height(100)
                 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: .s1) {
                     
                     Text(title)
                         .foregroundColor(theme.textPrimary)
@@ -126,7 +126,7 @@ extension Movies.List {
                         .font(.system(.headline, design: .rounded))
                         .lineLimit(2)
 
-                    VStack(alignment: .leading, spacing: 0) {
+                    VStack(alignment: .leading) {
                         
                         Text(overview.prefix(90) + "...")
                             .fontWeight(.bold)
