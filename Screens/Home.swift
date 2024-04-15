@@ -1,8 +1,13 @@
 import SwiftUI
 
 struct Home: View {
-    @StateObject var tabState = Globals.tabState
     @Environment(\.theme) var theme: Theme
+    
+    // We don't want observe TabState from here as that would
+    // destroy the navigation hierarchy when navigatinng to a movie as
+    // it modifies tabState (videoURL)
+    var goToTab: (Tab) -> Void = { Globals.tabState.selectedTab = $0 }
+    
     var body: some View {
         VStack(spacing: 0) {
             "Hello Clark".body
@@ -51,7 +56,7 @@ struct Home: View {
             title("Categories")
             Spacer()
             Heading(text: "View all")
-                .onTap { tabState.selectedTab = .button }
+                .onTap { goToTab(.button) }
                 .trailing(.s6)
         }
         
