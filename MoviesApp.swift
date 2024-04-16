@@ -1,5 +1,7 @@
 import SwiftUI
 
+let main = DispatchQueue.main
+
 enum Globals {
     static let tabState = TabState()
 }

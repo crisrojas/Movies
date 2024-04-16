@@ -16,7 +16,7 @@ struct Movie: View, NetworkGetter {
     var body: some View {
         VStack {
             Header(props: props) * {
-                $0.isFavorite = favorites.contains(props.id)
+                $0.isFavorite = favorites.contains(props.id.string ?? "")
                 $0.toggleFavorite = toggleFavorite
             }
             InfoStack(props: props).top(.s6)
@@ -32,17 +32,17 @@ struct Movie: View, NetworkGetter {
     
     
     func toggleFavorite() {
-        if favorites.contains(props.id) {
+        if favorites.contains(props.id.stringValue) {
             favorites.delete(props)
         } else {
             favorites.add(props)
         }
     }
-    
+
     func getTrailerURL() async {
         let url = TMDb.videos(id: props.id.intValue)
-        if let data = try? await fetchData(url: url) {
-            let first = JSON(data: data).results.array.first
+        if let (data, _) = try? await fetchData(url: url) {
+            let first = try? JSON(data: data).results.array.first
             if let key = first?.key.stringValue {
                 setTabVideoURL(youtubeURL(key: key))
             }
@@ -50,17 +50,16 @@ struct Movie: View, NetworkGetter {
     }
     
     var background: Background {
-        Background(url: props.backdrop_path.tmdbImageURL)
+        Background(url: props.backdrop_path.string?.tmdbImageURL)
     }
     
     func castSection() -> some View {
-        AsyncJSON(url: TMDb.credits(id: props.id.intValue), keyPath: "cast") {
-            if $0.array.isNotEmpty {
-                Cast(props: $0)
-            }
+        AsyncJSON(url: TMDb.credits(id: props.id.int ?? 0)) { json in
+            Cast(props: json.cast).horizontal(-.s6)
         }
     }
 }
+
 
 // MARK: - Header
 extension Movie {
@@ -98,7 +97,7 @@ extension Movie {
                 
                 Text(voteAverageRounded)
                     .font(.system(size: 38, weight: .black, design: .rounded))
-                    .foregroundColor(theme.textPrimary)
+                    .foregroundColor(theme.textSecondary)
                     .top(.s3)
                 
                 Text(ratingStars)
@@ -111,9 +110,7 @@ extension Movie {
             VStack(spacing: .s4) {
                 Image(systemName: "heart.fill")
                     .opacity(isFavorite ? 1 : 0.3)
-                    .onTap {
-                        toggleFavorite()
-                    }
+                    .onTap { toggleFavorite() }
                     .buttonStyle(ScaleDownButtonStyle())
                 .foregroundColor(isFavorite ? .red600 : theme.textPrimary)
                 .animation(.easeInOut, value: isFavorite)
@@ -146,10 +143,10 @@ private extension Movie.Header {
 extension Movie.Header {
     init(props: JSON) {
         id = props.id.intValue
-        title = props.title
+        title = props.title.stringValue
         voteAverage = props.vote_average.doubleValue
-        posterURL = props.poster_path.tmdbImageURL
-        trailerURL = props.trailerURL.url
+        posterURL = props.poster_path.string?.tmdbImageURL
+        trailerURL = nil//props.trailerURL.url?
         isFavorite = false
     }
 }
@@ -168,7 +165,7 @@ extension Movie {
         }
         
         var year: String {
-            guard let releaseDate = dateFormatter.date(from: props.release_date) else {
+            guard let releaseDate = dateFormatter.date(from: props.release_date.stringValue) else {
                 return "N/A"
             }
             return yearFormatter.string(from: releaseDate)
@@ -205,7 +202,7 @@ extension Movie {
                 Info(title: "Language", value: props.original_language.string ?? "N/A")
                 Spacer ()
                 
-                Info(title: "Vote count", value: "\(props.vote_count)")
+                Info(title: "Vote count", value: "\(props.vote_count.intValue)")
             }
         }
     }
@@ -221,9 +218,9 @@ extension Movie {
                 Text(title)
                     .foregroundColor(theme.textPrimary)
                     .fontWeight(.heavy)
-                Text(value)
+                Text(value.uppercased())
                     .fontWeight(.heavy)
-                    .foregroundColor(theme.textPrimary)
+                    .foregroundColor(theme.textSecondary)
                     .padding(.top, 5)
             }.font(.footnote)
         }
@@ -240,23 +237,36 @@ extension Movie {
                 alignment: .leading,
                 spacing: .s5
             ) {
-
                 Text("Storyline")
                     .font(.system(.headline, design: .rounded))
                     .fontWeight(.heavy)
                     .foregroundColor(theme.textPrimary)
 
-                Text(props.overview)
+                Text(props.overview.stringValue)
                     .font(.system(.footnote, design: .rounded))
                     .fontWeight(.bold)
-                    .foregroundColor(theme.textPrimary)
+                    .foregroundColor(theme.textSecondary)
             }
             .alignX(.leading)
         }
     }
 }
 
+struct MovieCast: Decodable, Identifiable, Equatable {
+    let id: Int
+    let name: String
+    let profile_path: String?
+    let credit_id: String?
+    
+    var profileURL: URL? {
+        guard let profilePath = profile_path else { return nil }
+        return URL(string: "https://image.tmdb.org/t/p/w500\(profilePath)")
+    }
+}
 
+struct CastResponse: Decodable {
+    let cast: [MovieCast]
+}
 // MARK: - Cast
 extension Movie {
     struct Cast: View {
@@ -271,29 +281,37 @@ extension Movie {
                     .font(.system(.headline, design: .rounded))
                     .fontWeight(.heavy)
                     .foregroundColor(theme.textPrimary)
+                    .leading(.s6)
                 
                 Carousel(model: props, spacing: .s2) { item in
-                    actorAvatar(
-                        path: item.profile_path,
-                        id: item.credit_id
+                    ActorAvatar(
+                        path: item.profile_path.string,
+                        id: item.credit_id.string ?? ""
                     )
                     .onTapScaleDown()
                     .leading(item.id == props.first?.id ? .s6 : 0)
                     .trailing(item.id == props.last?.id ? .s6 : 0)
                 }
-                .horizontal(-.s6)
             }
         }
+    }
+}
+
+extension Movie.Cast {
+    struct ActorAvatar: View {
+        @Environment(\.theme) var theme
+        let path: String?, id: String?
+        var profileURL: URL? {
+            URL(string: "https://image.tmdb.org/t/p/w500\(path ?? "")")
+        }
         
-        func actorAvatar(path: String, id: String?) -> some View {
-            let profileURL = URL(string: "https://image.tmdb.org/t/p/w500\(path)")
-            
-            return AsyncImage(url: profileURL) { image in
+        var body: some View {
+            AsyncImage(url: profileURL) { image in
                 
                 image
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                  
+                
                 
                 
             } placeholder: {
@@ -302,7 +320,6 @@ extension Movie {
             .size(.s14)
             .cornerRadius(.s2)
         }
-        
         var imagePlaceholder: some View {
             
             theme.imgPlaceholder

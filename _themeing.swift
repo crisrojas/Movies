@@ -51,6 +51,7 @@ extension ColorScheme {
 struct Theme: Equatable {
     var accent: Color = .sky900
     var textPrimary: Color = .sky900
+    var textSecondary: Color = Color(red: 106/255, green: 131/255, blue: 147/255)
     var tabbarBg: Color = .white
     
     var gradientFirst: Color = .teal600
@@ -72,6 +73,7 @@ struct Theme: Equatable {
     static let dark = Theme() * {
         $0.accent = .white
         $0.textPrimary = .white
+        $0.textSecondary = Color(red: 178/255, green: 192/255, blue: 188/255)
         $0.tabbarBg = .black
         $0.gradientFirst = .teal900
         $0.gradientSecond = .black

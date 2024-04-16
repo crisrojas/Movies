@@ -19,53 +19,40 @@ struct Movies: View, NetworkGetter {
         url.appendingQueryItem("page", value: page)
     }
     
-    @State var search = ""
-    
-    var body: some View {
-        _body//.searchable(text: $search)
-    }
+    var body: some View {_body}
     
     @ViewBuilder
     var _body: some View {
         switch state {
         case .loading: ProgressView().task { await loadData() }
-        case .success(let data): successView(data)
+        case .success(let data): successView(data.array)
         case .error(let error): error
         }
     }
     
     func loadData() async {
         do {
-            let data = try await fetchData(url: currentURL)
-            let json = JSON(data: data)
+            let (data, _) = try await fetchData(url: currentURL)
+            let json = try JSON(data: data)
             if state.isSuccess {
-                state.appendData(json, keyPath: "results")
+                state.appendData(json.results)
             } else {
-                state = .success(json)
+                state = .success(json.results)
             }
         } catch {
             state = .error(error.localizedDescription)
         }
     }
-    
-    @ViewBuilder // @todo
-    var cellLoading: some View {
-        if loadingMore {
-            ProgressView()
-        }
-    }
 
-    func successView(_ props: JSON) -> some View {
-        let data = props.results.array
-        return List(
+    func successView(_ data: [JSON]) -> some View {
+        List(
             data: data,
-            cellTask: { await cellTask(data, movie: $0) }
+            cellTask: { await loadMoreIfNeeded(data, movie: $0) }
         )
     }
     
-    
-    func cellTask(_ data: [JSON], movie: JSON) async {
-        if movie.id == data.last?.id {
+    func loadMoreIfNeeded(_ data: [JSON], movie: JSON) async {
+        if movie.id.string == data.last?.id.string {
             page += 1
             await loadData()
         }
@@ -81,7 +68,7 @@ extension Movies {
         typealias List = SwiftUI.List
         
         var body: some View {
-            List(data, id: \.id) { movie in
+            List(data, id: \.self) { movie in
                 Cell(props: movie)
                     .onTap(navigateTo: Movie(props: movie))
                     .task { await cellTask(movie) }
@@ -145,8 +132,8 @@ extension Movies.List {
 
 extension Movies.List.Cell {
     init(props: JSON)  {
-        title = props.title
-        posterURL = props.poster_path.tmdbImageURL
-        overview = props.overview
+        title = props.title.stringValue
+        posterURL = props.poster_path.string?.tmdbImageURL
+        overview = props.overview.stringValue
     }
 }

@@ -6,3 +6,4 @@
 - Empty states
 - search filter
 - Tips
+- Genres on carousell

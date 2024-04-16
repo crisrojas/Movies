@@ -38,8 +38,8 @@ struct Profile: View {
     
     var systemRectangle: some View {
         ZStack{
-            rectangle(scheme: .light)
-            rectangle(scheme: .dark)
+            schemeIcon(scheme: .light)
+            schemeIcon(scheme: .dark)
                 .clipShape(
                     Path { path in
                         path.move(to: CGPoint(x: 0, y: .s7))
@@ -80,8 +80,7 @@ struct Profile: View {
             )
     }
     
-    // @todo: find better name
-    func rectangle(scheme: ColorScheme) -> some View {
+    func schemeIcon(scheme: ColorScheme) -> some View {
         Rectangle()
             .size(.s7)
             .foregroundColor(scheme == .dark ? .black : .white)
@@ -97,7 +96,7 @@ struct Profile: View {
 
     func row(scheme: ColorScheme) -> some View {
         HStack(spacing: .s4) {
-           rectangle(scheme: scheme)
+           schemeIcon(scheme: scheme)
             (scheme == .dark ? "Dark" : "Light").body.fontWeight(.bold).foregroundColor(theme.textPrimary)
             Spacer()
             if preferredScheme == scheme {

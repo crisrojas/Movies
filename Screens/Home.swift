@@ -39,14 +39,13 @@ struct Home: View {
     @ViewBuilder
     var popularSection: some View {
         title("Popular movies")
+            .top(.s8)
+            .bottom(.s6)
+        
         AsyncJSON(url: TMDb.popular) { items in
-            Carousel(model: items, spacing: .s6) { item in
-                Card(
-                    image: item.backdrop_path.string,
-                    title: item.title.string,
-                    genres:  nil // @todo
-                )
-                .leading(items.first?.id.string == item.id.string ? 24 : 0)
+            Carousel(model: items.results, spacing: .s6) { item in
+                Backdrop(props: item)
+                .leading(items.results.array.first?.id == item.id ? 24 : 0)
                 .onTap(navigateTo: Movie(props: item))
                 .buttonStyle(ScaleDownButtonStyle())
             }
@@ -62,6 +61,8 @@ struct Home: View {
                 .onTap { goToTab(.button) }
                 .trailing(.s6)
         }
+        .top(.s8)
+        .bottom(.s6)
         
         TwoColumnsGrid.from(FeaturedGenre.allCases) { item in
             GenreButton(model: item)
@@ -74,9 +75,12 @@ struct Home: View {
     @ViewBuilder
     var nowPlayingSection: some View {
         title("Now playing")
+            .top(.s8)
+            .bottom(.s6)
+        
         AsyncJSON(url: TMDb.now_playing) { items in
-            TwoColumnsGrid.from(items) { item in
-                poster(path: item.poster_path)
+            TwoColumnsGrid.from(items.results) { item in
+                poster(path: item.poster_path.stringValue)
                     .onTap(navigateTo: Movie(props: item))
                     .buttonStyle(ScaleDownButtonStyle())
             }
@@ -88,8 +92,6 @@ struct Home: View {
         Heading(text: text)
             .alignX(.leading)
             .leading(.s6)
-            .bottom(.s4)
-            .top(.s16)
     }
 }
 
