@@ -8,17 +8,31 @@
 
 MVVM, VIPER, VIP, Clean Architecture, dependency injection... all of these approaches eventually lead to burnout...
 
-They claim to provide benefits for large projects, yet their advocates never define what a "large project" is, resulting in every project adopting such ~(anti-)~patterns.
+They claim to provide benefits for large projects, yet their advocates never define what a "large project" is, resulting in every project adopting such (anti)patterns.
 
-This project is a playground for experimentation, marking my first step in moving away from industry madness and toward simpler, yet powerful, scalable, enjoyable, and maintainable (really, no marketing void promises) development patterns. This is my take on "Simplicity Driven Development" philosophy (which isn't really my take, but rather the SwiftUI one; you won't find much innovation here coming from me)...
+This project is a playground for experimentation, marking my first step in moving away from industry madness and walking toward simpler, yet powerful, scalable, enjoyable, and maintainable development patterns (really, no marketing void promises).
 
-### Patterns/Decisions (heavily influenced/learned by reading Jim Lai's articles)
+This is my take on "Simplicity Driven Development" philosophy (which isn't really my take, but rather the SwiftUI one...)
+
+### Technical decisions/philosophy (heavily influenced by Jim Lai's articles)
 
 - Encapsulation over Dependency Injection
 - Prioritizing simplicity and a small codebase over testability
-- Leveraging Native SDK rather than fighting against it
-- Using URLSession instead of unnecessary third-party libraries (I'm looking at you, Alamofire/Moya...)
-- Crafting tailored code to meet the app's needs instead of relying on unnecessary, cognitive taxing patterns & boilerplate
+- Smart refactoring instead of "one VM/Presenter per view"...
+- Leveraging Native SDK rather than fighting it
+- Using URLSession instead of unnecessary third-party libraries (I'm looking at you, Alamofire/Moya)
+- Tailored, handcrafted code over unnecessary, cognitive taxing boilerplate
+- "I won't needed it and If I do I'll smartly rewrite/migrate" instead of abstracting your persistency solution away "just in case"
+
+About that latest point, here's some advice:
+
+- you need sync to a server?: Codable + FS
+- you need local persistence only?: Codable + FS
+- you need sync between devices?: CoreData/SwiftData + CloudKit
+
+If you know before hand the answers to those questions (which you know 100% of the time regarding a project), you won't ever neeed to change your persistence solution...
+
+Thats all. Happy coding 👋
 
 ### Todo/WIP
 
@@ -27,8 +41,10 @@ This project is a playground for experimentation, marking my first step in movin
     - search/filter on locally saved lists
     - filter by category
     - pin
+- Error state component
 - Empty states components
 - Search feature
 - Tips
 - Map Genres on backdrop cards component
-- Add login
+- Accessibility
+- Writting tests

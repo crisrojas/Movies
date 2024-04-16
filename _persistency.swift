@@ -9,12 +9,12 @@ import Foundation
 
 
 enum FileBase {
-    static let favorites = FileResource("favorites")
-    static let ratings   = FileResource("ratings")
+    static let favorites = JsonResource("favorites")
+    static let ratings   = JsonResource("ratings")
 }
 
 
-final class FileResource: ObservableObject {
+final class JsonResource: ObservableObject {
 
     // Prevents writes on init
     var isInitializing = true
