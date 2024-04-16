@@ -1,30 +1,34 @@
+### Design
+
+- [Emre Seçer](https://dribbble.com/shots/7158704-Movie-App)
+
 ### About
 
+> Everything should be made as simple as possible, but not simpler. —Attributed to Albert Einstein (not sure about that...)
 
-> Everything should be made as simple as possible, not more —Some german scientific (not sure about that)
+MVVM, VIPER, VIP, Clean Architecture, dependency injection... all of these approaches eventually lead to burnout...
 
-MVVM, VIPER, Clean Architecture, dependency injection...all of those paths eventually led to burnout...
+They claim to provide benefits for large projects, yet their advocates never define what a "large project" is, resulting in every project adopting such ~(anti-)~patterns.
 
-They claim to provide benefits for big projects, yet advocates never define what a "big project" is, and as a result every project ends adopting such ~anti~patterns.
+This project is a playground for experimentation, marking my first step in moving away from industry madness and toward simpler, yet powerful, scalable, enjoyable, and maintainable (really, no marketing void promises) development patterns. This is my take on "Simplicity Driven Development" philosophy (which isn't really my take, but rather the SwiftUI one; you won't find much innovation here coming from me)...
 
-This project is a playground for experimentation, is my first step on walking towards defining simpler development patterns, my take on a "Simplicity Driven Development" philosophy...
+### Patterns/Decisions (heavily influenced/learned by reading Jim Lai's articles)
 
-### Patterns/Decisions (heavily influenced/learned by reading Jim Lai articles)
- 
-- Encapsulation over DI
-- Simplicity and small codebase over testability
-- Levarage Native SDK over fighting it
-- Manual implementation over third-party libs when it makes sense (looking at you Alamofire...)
-- Tailored code to the app needs instead of unneeded boilerplate
+- Encapsulation over Dependency Injection
+- Prioritizing simplicity and a small codebase over testability
+- Leveraging Native SDK rather than fighting against it
+- Using URLSession instead of unnecessary third-party libraries (I'm looking at you, Alamofire/Moya...)
+- Crafting tailored code to meet the app's needs instead of relying on unnecessary, cognitive taxing patterns & boilerplate
 
 ### Todo/WIP
 
 - Persistence:
     - rating list
-    - search/filter on saved lists
+    - search/filter on locally saved lists
     - filter by category
     - pin
-- Empty states
-- search filter
+- Empty states components
+- Search feature
 - Tips
-- Genres on carousell
+- Map Genres on backdrop cards component
+- Add login

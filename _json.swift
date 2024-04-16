@@ -4,7 +4,7 @@
 //
 //  Created by Cristian Felipe Patiño Rojas on 16/04/2024.
 //
-
+// @todo: add github link of original repo where I took this
 import Foundation
 
 @dynamicMemberLookup

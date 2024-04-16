@@ -152,7 +152,6 @@ struct AsyncJSON<C: View, P: View, E: View>: View, NetworkGetter {
     @State var state = ResourceState.loading
     
     let url: URL
-    let keypath: String?
     
     @ViewBuilder var content: (JSON) -> C
     @ViewBuilder var placeholder: () -> P
@@ -160,13 +159,11 @@ struct AsyncJSON<C: View, P: View, E: View>: View, NetworkGetter {
    
     init(
         url: URL,
-        keyPath: String? = nil,
         @ViewBuilder content: @escaping (JSON) -> C,
         @ViewBuilder placeholder: @escaping () -> P = {ProgressView()},
         @ViewBuilder error: @escaping (String) -> E = {Text($0)}
     ) {
         self.url = url
-        self.keypath = keyPath
         self.content = content
         self.placeholder = placeholder
         self.error = error

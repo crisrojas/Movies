@@ -16,7 +16,7 @@ enum FileBase {
 
 final class FileResource: ObservableObject {
 
-    // Prevents writing on init
+    // Prevents writes on init
     var isInitializing = true
     @Published var data = JSON.array([]) {
         didSet { if !isInitializing { persist() } }
