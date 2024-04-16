@@ -65,7 +65,7 @@ struct Home: View {
         .bottom(.s6)
         
         TwoColumnsGrid.from(FeaturedGenre.allCases) { item in
-            GenreButton(model: item)
+            item
                 .onTap(navigateTo: Movies(url: TMDb.genre(id: item.id)))
                 .buttonStyle(ScaleDownButtonStyle())
         }
