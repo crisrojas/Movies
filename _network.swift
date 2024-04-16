@@ -51,7 +51,8 @@ enum TMDb {
 }
 
 
-typealias Completion<T> = (Result<T, Error>) -> Void
+typealias Result<T> = Swift.Result<T, Error>
+typealias Completion<T> = (Result<T>) -> Void
 
 protocol NetworkGetter {}
 extension NetworkGetter {
@@ -65,7 +66,7 @@ extension NetworkGetter {
     
     func fetchData(url: URL, dispatchOn queue: DispatchQueue? = nil, completion: @escaping Completion<JSON>) {
         let dispatch = dispatch(queue, completion: completion)
-        fetchData(url: url) { (result: Result<Data, Error>) in
+        fetchData(url: url) { (result: Result<Data>) in
             switch result {
             case .success(let data):
                 // Not sure if dispatching decoding in a different queue
@@ -106,13 +107,13 @@ extension NetworkGetter {
 
 import SwiftUI
 
-enum JsonState: Equatable {
+enum ResourceState: Equatable {
     case loading
     case success(JSON)
     case error(String)
 }
 
-extension JsonState {
+extension ResourceState {
     var isSuccess: Bool {
         switch self {
         case .success: return true
@@ -136,14 +137,18 @@ extension JsonState {
     }
 }
 
-struct AsyncJSON<C: View, P: View, E: View>: View, NetworkGetter {
-    
-    enum ResourceState {
-        case loading
-        case success(JSON)
-        case error(Error)
+
+extension ResourceState {
+    init(from result: Result<JSON>) {
+        switch result {
+        case .success(let data): self = .success(data)
+        case .failure(let error): self = .error(error.localizedDescription)
+        }
     }
-    
+}
+
+struct AsyncJSON<C: View, P: View, E: View>: View, NetworkGetter {
+
     @State var state = ResourceState.loading
     
     let url: URL
@@ -172,7 +177,7 @@ struct AsyncJSON<C: View, P: View, E: View>: View, NetworkGetter {
         switch state {
         case .loading: loading()
         case .success(let data): content(data)
-        case .error(let error): self.error(error.localizedDescription)
+        case .error(let error): self.error(error)
         }
     }
     
@@ -183,116 +188,9 @@ struct AsyncJSON<C: View, P: View, E: View>: View, NetworkGetter {
                 case .success(let data):
                     state = .success(data)
                 case .failure(let error):
-                    state = .error(error)
+                    state = .error(error.localizedDescription)
                 }
             }
-        }
-    }
-}
-
-
-struct AsyncDecodable<C: View, P: View, E: View, T: Decodable>: View, NetworkGetter {
-    enum ResourceState {
-        case loading
-        case success(T)
-        case error(String)
-    }
-    
-    @State var state = ResourceState.loading
-    
-    let url: URL
-    
-    @ViewBuilder var content: (T) -> C
-    @ViewBuilder var placeholder: () -> P
-    @ViewBuilder var error: (String) -> E
-    
-    init(
-        url: URL,
-        @ViewBuilder content: @escaping (T) -> C,
-        @ViewBuilder placeholder: @escaping () -> P = {ProgressView()},
-        @ViewBuilder error: @escaping (String) -> E = {Text($0)}
-    ) {
-        self.url = url
-        self.content = content
-        self.placeholder = placeholder
-        self.error = error
-    }
-    
-    var body: some View {
-        switch state {
-        case .loading: loading()
-        case .success(let data): content(data)
-        case .error(let error): self.error(error)
-        }
-    }
-    
-     var jsonDecoder = JSONDecoder()
-    
-    func loading() -> some View {
-        placeholder().onAppear {
-            fetchData(url: url) { result in
-                switch result {
-                case .success(let data):
-                    do {
-                        // Not usre if this is needed
-                            let mapped = try jsonDecoder.decode(T.self, from: data)
-                            DispatchQueue.main.async {
-                                state = .success(mapped)
-                            }
-                    } catch {
-                        state = .error("Decoding error")
-                    }
-                case .failure(let error):
-                    DispatchQueue.main.async {
-                        state = .error(error.localizedDescription)
-                    }
-                }
-            }
-        }
-    }
-}
-
-struct AsyncData<C: View, P: View, E: View>: View, NetworkGetter {
-    
-    enum ResourceState {
-        case loading
-        case success(Data)
-        case error(String)
-    }
-    
-    @State var state = ResourceState.loading
-    
-    let url: URL
-    
-    @ViewBuilder var content: (Data) -> C
-    @ViewBuilder var placeholder: () -> P
-    @ViewBuilder var error: (String) -> E
-    
-    var body: some View {
-        switch state {
-        case .loading: loading()
-        case .success(let data): content(data)
-        case .error(let error): Text(error)
-        }
-    }
-    
-    func loading() -> some View {
-        placeholder().onAppear {
-            fetchData(url: url, dispatchOn: .main) { result in
-                switch result {
-                case .success(let data): state = .success(data)
-                case .failure(let error): state = .error(error.localizedDescription)
-                }
-            }
-        }
-    }
-}
-
-extension JsonState {
-    init(from result: Result<JSON, Error>) {
-        switch result {
-        case .success(let data): self = .success(data)
-        case .failure(let error): self = .error(error.localizedDescription)
         }
     }
 }

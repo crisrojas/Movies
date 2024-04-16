@@ -9,7 +9,7 @@ import SwiftUI
 
 struct Movies: View, NetworkGetter {
     
-    @State var state = JsonState.loading
+    @State var state = ResourceState.loading
     @State var loadingMore = false
     @State var page = 1
     
