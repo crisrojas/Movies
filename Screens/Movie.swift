@@ -54,7 +54,7 @@ struct Movie: View, NetworkGetter {
     }
     
     func castSection() -> some View {
-        AsyncJSON(url: TMDb.credits(id: props.id.int ?? 0)) { json in
+        AsyncJSON(url: TMDb.credits(id: props.id.intValue)) { json in
             Cast(props: json.cast).horizontal(-.s6)
         }
     }
@@ -285,7 +285,7 @@ extension Movie {
                 
                 Carousel(model: props, spacing: .s2) { item in
                     ActorAvatar(
-                        path: item.profile_path.string,
+                        path: item.profile_path.stringValue,
                         id: item.credit_id.string ?? ""
                     )
                     .onTapScaleDown()
@@ -300,9 +300,10 @@ extension Movie {
 extension Movie.Cast {
     struct ActorAvatar: View {
         @Environment(\.theme) var theme
-        let path: String?, id: String?
+        let path: String
+        let id: String?
         var profileURL: URL? {
-            URL(string: "https://image.tmdb.org/t/p/w500\(path ?? "")")
+            URL(string: "https://image.tmdb.org/t/p/w500\(path)")
         }
         
         var body: some View {
