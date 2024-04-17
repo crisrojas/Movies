@@ -120,8 +120,10 @@ extension JSON: Codable {
 // MARK: Array and Dictionary lookup.
 extension JSON {
     public subscript(dynamicMember member: String) -> Self {
-        guard case .dict(let jsonDictionary) = self else { return .null }
-        return jsonDictionary[member] ?? .null
+        get {
+            guard case .dict(let jsonDictionary) = self else { return .null }
+            return jsonDictionary[member] ?? .null
+        }
     }
     
     // had to comment this as I'm having some inteference on lists
@@ -148,17 +150,35 @@ extension JSON {
 //    }
 }
 
+
 // MARK: Suscripts
 extension JSON {
+   
+    
     public subscript(index: Int) -> Self? {
         guard case .array(let arr) = self else { return nil }
         return index < arr.count ? arr[index] : nil
     }
     
-    public subscript(key: String) -> Self {
-        guard case .dict(let dict) = self else { return .null }
-        return dict[key] ?? .null
-    }
+    public subscript(k: String) -> Self? {
+          get {
+              guard case .dict(let dict) = self else { return .null }
+              return dict[k] ?? .null
+          }
+        set {
+              switch self {
+              case .dict(var d):
+                  if case .null = newValue {
+                      d[k] = nil
+                  } else {
+                      d[k] = newValue
+                  }
+                  self = .dict(d)
+              default:
+                  break
+              }
+          }
+      }
 }
 
 // MARK: - Inits
