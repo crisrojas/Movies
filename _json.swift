@@ -337,6 +337,9 @@ extension JSON: ExpressibleByBooleanLiteral {
 
 // MARK: - Dynamic lookup accessors
 extension JSON {
+    
+    // Dynamic subscript so we can use dot syntax to access properties
+    // `json.title =
     public subscript(dynamicMember member: String) -> Self {
         get { self[member] }
         set { self[member] = newValue }
@@ -422,6 +425,7 @@ extension JSON: CustomStringConvertible, CustomDebugStringConvertible {
 protocol JSONConvertible {
     func json() -> JSON
 }
+
 
 extension String: JSONConvertible {
     func json() -> JSON {
