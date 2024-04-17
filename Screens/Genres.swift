@@ -11,10 +11,10 @@ struct Genres: View {
     
     var body: some View {
         AsyncJSON(url: TMDb.genres)  { response in
-            List(response.genres.array) { genre in
+            List(response.genres.array, id: \.id) { genre in
                 Text(genre.name)
                     .font(.system(.headline, design: .rounded))
-                    .onTap(navigateTo: list(genre.id.intValue))
+                    .onTap(navigateTo: list(genre.id))
             }
             .background(DefaultBackground().fullScreen())
             .modify {
@@ -27,11 +27,5 @@ struct Genres: View {
 
     func list(_ id: Int) -> Movies {
         Movies(url: TMDb.genre(id: id))
-    }
-}
-
-extension Text {
-    init(_ json: JSON) {
-        self.init(json.stringValue)
     }
 }

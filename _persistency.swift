@@ -43,7 +43,7 @@ final class JsonResource: ObservableObject {
         }
     }
     
-    func read(id: String) -> JSON? {data.array.first(where: {$0.id.string == id})}
+    func read(id: String) -> JSON? {data.array.first(where: {$0.id == id})}
     
     func add(_ item: JSON) {
         let new = data.array + [item]

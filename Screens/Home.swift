@@ -45,7 +45,7 @@ struct Home: View {
         AsyncJSON(url: TMDb.popular) { items in
             Carousel(model: items.results, spacing: .s6) { item in
                 Backdrop(props: item)
-                .leading(items.results.array.first?.id == item.id ? 24 : 0)
+                    .leading(items.results.array.first?.id == item.id ? 24 : 0)
                 .onTap(navigateTo: Movie(props: item))
                 .buttonStyle(ScaleDownButtonStyle())
             }
@@ -80,7 +80,7 @@ struct Home: View {
         
         AsyncJSON(url: TMDb.now_playing) { items in
             TwoColumnsGrid.from(items.results) { item in
-                poster(path: item.poster_path.stringValue)
+                poster(path: item.poster_path)
                     .onTap(navigateTo: Movie(props: item))
                     .buttonStyle(ScaleDownButtonStyle())
             }

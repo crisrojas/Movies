@@ -151,7 +151,7 @@ private extension Backdrop {
 
 extension Backdrop {
     init(props: JSON) {
-        self.title = props.title.stringValue
+        self.title = props.title
         self.image = props.backdrop_path.string
         self.genres = props.genre_ids.array.map { $0.stringValue }.joined(separator: ", ") // @todo
     }

@@ -16,7 +16,7 @@ struct Movie: View, NetworkGetter {
     var body: some View {
         VStack {
             Header(props: props) * {
-                $0.isFavorite = favorites.contains(props.id.string ?? "")
+                $0.isFavorite = favorites.contains(props.id)
                 $0.toggleFavorite = toggleFavorite
             }
             InfoStack(props: props).top(.s6)
@@ -32,7 +32,7 @@ struct Movie: View, NetworkGetter {
     
     
     func toggleFavorite() {
-        if favorites.contains(props.id.stringValue) {
+        if favorites.contains(props.id) {
             favorites.delete(props)
         } else {
             favorites.add(props)
@@ -40,10 +40,10 @@ struct Movie: View, NetworkGetter {
     }
 
     func getTrailerURL() async {
-        let url = TMDb.videos(id: props.id.intValue)
+        let url = TMDb.videos(id: props.id)
         if let (data, _) = try? await fetchData(url: url) {
             let first = try? JSON(data: data).results.array.first
-            if let key = first?.key.stringValue {
+            if let key = first?.key.string {
                 setTabVideoURL(youtubeURL(key: key))
             }
         }
@@ -54,7 +54,7 @@ struct Movie: View, NetworkGetter {
     }
     
     func castSection() -> some View {
-        AsyncJSON(url: TMDb.credits(id: props.id.intValue)) { json in
+        AsyncJSON(url: TMDb.credits(id: props.id)) { json in
             Cast(props: json.cast).horizontal(-.s6)
         }
     }
@@ -142,9 +142,9 @@ private extension Movie.Header {
 
 extension Movie.Header {
     init(props: JSON) {
-        id = props.id.intValue
-        title = props.title.stringValue
-        voteAverage = props.vote_average.doubleValue
+        id = props.id
+        title = props.title
+        voteAverage = props.vote_average
         posterURL = props.poster_path.string?.tmdbImageURL
         trailerURL = nil//props.trailerURL.url?
         isFavorite = false
@@ -157,15 +157,15 @@ extension Movie {
         let props: JSON
         
         var duration: String {
-            guard props.runtime.intValue > 0 else {
+            guard props.runtime > 0 else {
                 return "N/A"
             }
             
-            return durationFormatter.string(from: TimeInterval(props.runtime.intValue) * 60) ?? "N/A"
+            return durationFormatter.string(from: props.runtime * 60) ?? "N/A"
         }
         
         var year: String {
-            guard let releaseDate = dateFormatter.date(from: props.release_date.stringValue) else {
+            guard let releaseDate = dateFormatter.date(from: props.release_date) else {
                 return "N/A"
             }
             return yearFormatter.string(from: releaseDate)
@@ -242,7 +242,7 @@ extension Movie {
                     .fontWeight(.heavy)
                     .foregroundColor(theme.textPrimary)
 
-                Text(props.overview.stringValue)
+                Text(props.overview)
                     .font(.system(.footnote, design: .rounded))
                     .fontWeight(.bold)
                     .foregroundColor(theme.textSecondary)
@@ -252,21 +252,6 @@ extension Movie {
     }
 }
 
-struct MovieCast: Decodable, Identifiable, Equatable {
-    let id: Int
-    let name: String
-    let profile_path: String?
-    let credit_id: String?
-    
-    var profileURL: URL? {
-        guard let profilePath = profile_path else { return nil }
-        return URL(string: "https://image.tmdb.org/t/p/w500\(profilePath)")
-    }
-}
-
-struct CastResponse: Decodable {
-    let cast: [MovieCast]
-}
 // MARK: - Cast
 extension Movie {
     struct Cast: View {
@@ -285,8 +270,8 @@ extension Movie {
                 
                 Carousel(model: props, spacing: .s2) { item in
                     ActorAvatar(
-                        path: item.profile_path.stringValue,
-                        id: item.credit_id.string ?? ""
+                        path: item.profile_path,
+                        id: item.credit_id
                     )
                     .onTapScaleDown()
                     .leading(item.id == props.first?.id ? .s6 : 0)
