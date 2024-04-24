@@ -201,15 +201,6 @@ extension View {
             self
         }
     }
-    
-    @ViewBuilder
-    func ifLet<T>(_ variable: T?, transform: (Self, T) -> some View) -> some View {
-        if let variable {
-            transform(self, variable)
-        } else {
-            self
-        }
-    }
 }
 
 

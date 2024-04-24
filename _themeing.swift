@@ -15,7 +15,7 @@ struct Schemer<Content: View>: View {
     var body: some View {
         content()
             .environment(\.theme, theme)
-            .ifLet(scheme) { $0.preferredColorScheme($1) }
+            .preferredColorScheme(scheme)
     }
 }
 

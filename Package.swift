@@ -34,9 +34,17 @@ let package = Package(
             ]
         )
     ],
+    dependencies: [
+        .package(url: "https://github.com/pointfreeco/combine-schedulers", "1.0.0"..<"2.0.0"),
+        .package(url: "https://github.com/siteline/SwiftUI-Introspect", "1.0.0"..<"2.0.0")
+    ],
     targets: [
         .executableTarget(
             name: "AppModule",
+            dependencies: [
+                .product(name: "CombineSchedulers", package: "combine-schedulers"),
+                .product(name: "SwiftUIIntrospect", package: "swiftui-introspect")
+            ],
             path: "."
         )
     ]

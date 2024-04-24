@@ -160,10 +160,10 @@ extension JSON {
     ///      object.lastNae   = "Doe"
     /// }
     /// ```
-    public init(_ block: (inout JSON) -> Void) {
-        var mutableJSON = JSON()
-        block(&mutableJSON)
-        self = mutableJSON
+    public init(_ transform: (inout JSON) -> Void) {
+        var copy = JSON()
+        transform(&copy)
+        self = copy
     }
     
     init(data: Data, decoder: JSONDecoder = decoder) throws {

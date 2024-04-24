@@ -16,7 +16,7 @@ enum FileBase {
 extension JSON {
     final class Persisted: ObservableObject {
         
-        // Prevents writes on init
+        // Prevents unneeded write on init
         var isInitializing = true
         @Published var data = JSON.array() {
             didSet { if !isInitializing { persist() } }
@@ -44,6 +44,14 @@ extension JSON {
         }
         
         func read(id: String) -> JSON? {data.array.first(where: {$0.id == id})}
+        
+        func toggle(_ item: JSON) {
+            if contains(item.id) {
+                delete(item)
+            } else {
+                add(item)
+            }
+        }
         
         func add(_ item: JSON) {
             let new = data.array + [item]

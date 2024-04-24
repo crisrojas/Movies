@@ -9,11 +9,11 @@ import SwiftUI
 
 struct ScaleDownButtonStyle: ButtonStyle {
     var factor = 0.9
-    var duration = 0.1
+    var duration = 0.2
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .scaleEffect(configuration.isPressed ? factor : 1)
-            .animation(.easeInOut(duration: duration), value: configuration.isPressed)
+            .animation(.easeIn(duration: duration), value: configuration.isPressed)
     }
 }
 

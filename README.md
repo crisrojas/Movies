@@ -4,33 +4,43 @@
 
 ### About
 
+![](dynocoder-quote.png)
+
 > Everything should be made as simple as possible, but not simpler. —Attributed to Albert Einstein (not sure about that...)
 
 MVVM, VIPER, VIP, Clean Architecture, dependency injection... all of these approaches eventually lead to burnout...
 
 They claim to provide benefits for large projects, yet their advocates never define what a "large project" is, resulting in every project adopting such (anti)patterns.
 
-This project is a playground for experimentation, marking my first step in moving away from industry madness and walking toward simpler, yet powerful, scalable, enjoyable, and maintainable development patterns (really, no marketing void promises).
+![](ishouldbeworkingrn-quote.png)
+
+I've worked professionally in 8 applications. 7 of them used MVVM, the last one used VIPER. None of them needed it.
+
+This project is a playground for experimentation, marking my first step in moving away from industry madness and walking toward simpler, yet powerful, scalable, enjoyable, and maintainable development patterns (really, no marketing void promises as opposed to the Clean Architecture crowd).
 
 This is my take on "Simplicity Driven Development" philosophy (which isn't really my take, but rather the SwiftUI one...)
 
-### Technical decisions/philosophy (heavily influenced by Jim Lai's articles)
+### Technical decisions/philosophy (heavily influenced by Jim Lai's articles/gists)
 
+- Dynamic JSON instead of mirror objects of your api domain (app domain lives on the server, leave it there unless there's actually a good reason...)
 - Encapsulation over Dependency Injection
 - Prioritizing simplicity and a small codebase over testability
-- Smart refactoring instead of "one VM/Presenter per view"...
+- Smart refactoring instead of "one VM/Presenter per view"... (how dare you tell me that scales...)
 - Leveraging Native SDK rather than fighting it
-- Using URLSession instead of unnecessary third-party libraries (I'm looking at you, Alamofire/Moya)
+- Using URLSession instead of unnecessary third-party libraries.
 - Tailored, handcrafted code over unnecessary, cognitive taxing boilerplate
 - "I won't needed it and If I do I'll smartly rewrite/migrate" instead of abstracting your persistency solution away "just in case"
 
-About that latest point, here's some advice:
+About that last point, here's some basic advice:
 
-- you need sync to a server?: Codable + FS
-- you need local persistence only?: Codable + FS
-- you need sync between devices?: CoreData/SwiftData + CloudKit
+- you need sync to a server?: Codable + FileSystem
+- you need local persistence only?: Codable + FileSystem
+- no needworking, but you need sync between devices?: CoreData/SwiftData + CloudKit
 
-If you know before hand the answers to those questions (which you know 100% of the time regarding a project), you won't ever neeed to change your persistence solution...
+If you know before hand the answers to those questions (which, please, be honest... you know 100% of the time), you won't ever need to change your persistence solution...
+
+![](inkprk114-quote.png)
+![](adiga-cheezo-quote.png)
 
 Thats all. Happy coding 👋
 
@@ -48,3 +58,4 @@ Thats all. Happy coding 👋
 - Map Genres on backdrop cards component
 - Accessibility
 - Writting tests
+- language specific fetch -> &language=es-ES

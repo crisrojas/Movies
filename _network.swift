@@ -70,7 +70,7 @@ extension NetworkGetter {
             switch result {
             case .success(let data):
                 // Not sure if dispatching decoding in a different queue
-                // really helps...
+                // really helps with performans, anyways:...
                 DispatchQueue.global(qos: .background).async {
                     do {
                         let json = try JSON(data: data)
@@ -181,12 +181,7 @@ struct AsyncJSON<C: View, P: View, E: View>: View, NetworkGetter {
     func loading() -> some View {
         placeholder().onAppear {
             fetchData(url: url, dispatchOn: .main) { result in
-                switch result {
-                case .success(let data):
-                    state = .success(data)
-                case .failure(let error):
-                    state = .error(error.localizedDescription)
-                }
+                state = .init(from: result)
             }
         }
     }
@@ -196,7 +191,7 @@ struct AsyncJSON<C: View, P: View, E: View>: View, NetworkGetter {
 struct AsyncImage<C: View, P: View>: View, NetworkGetter {
     var url: URL?
     @ViewBuilder var content: (Image) -> C
-    @ViewBuilder var placeholder: () -> P
+    @ViewBuilder var placeholder: ()  -> P
     @State var image: Image? = nil
 
     var body: some View {
