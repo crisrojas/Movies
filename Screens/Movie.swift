@@ -6,44 +6,153 @@
 //
 
 import SwiftUI
+import SwiftUIIntrospect
 
+struct ProgressIcon: View {
+    var image: String
+    @Binding var progress: Double
+    //    let side: CGFloat
+    var body: some View {
+        Circle()
+            .frame(width: 54)
+            .frame(height: 54)
+            .opacity(progress)
+            .foregroundColor(progress != 1 ? Color(uiColor: .systemGray3) : .red)
+            .overlay(Image(systemName: image).foregroundColor(.white))
+    }
+}
+
+
+struct MagnifyingIcon: View {
+    let progress: Double
+    
+    private let side: CGFloat = 20
+    private let color = Color.white
+    var body: some View {
+        Circle()
+            .trim(from: 0, to: progress)
+            .stroke(color, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+            .overlay(magnifyingHandle, alignment: .trailing)
+            .rotationEffect(.degrees(-180 + (50 * progress)))
+            .frame(width: side)
+            .frame(height: side)
+    }
+    
+    var magnifyingHandle: some View {
+        Capsule()
+            .foregroundColor(color)
+            .frame(height: 4)
+            .frame(width: progress >= 0.5 ? 10 * progress : 0)
+            .offset(x: -20)
+        
+    }
+}
+
+extension Array {
+    var prevlast: Element? {
+        let idx = self.count - 2
+        guard indices.contains(idx) else {return nil}
+        return self[idx]
+    }
+}
+
+
+
+final class ScrollViewDelegate: NSObject, ObservableObject, UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        print(scrollView.contentOffset)
+    }
+    
+    func scrollViewWillBeginDecelerating(_ scrollView: UIScrollView) {
+        print(scrollView.contentOffset.y)
+    }
+}
+
+var delegate = ScrollViewDelegate()
 struct Movie: View, NetworkGetter {
     
     @StateObject var favorites = FileBase.favorites
     var setTabVideoURL: (URL?) -> Void = { Globals.tabState.videoURL = $0 }
-    
+    @State private var progress = 0.0
     let props: JSON
+    @State var isScrolling = false
+    @State var offsets = [CGFloat]()
+    @State var isRating = false
     var body: some View {
-        VStack {
-            Header(props: props) * {
-                $0.isFavorite = favorites.contains(props.id.string ?? "")
-                $0.toggleFavorite = toggleFavorite
+        ScrollView {
+            VStack {
+                Header(props: props) * { h in
+                    h.isFavorite = favorites.contains(props.id)
+                    h.toggleFavorite = toggleFavorite
+                }
+                InfoStack(props: props).top(.s6)
+                StoryLine(props: props).top(.s9)
+                castSection().vertical(.s9)
             }
-            InfoStack(props: props).top(.s6)
-            StoryLine(props: props).top(.s9)
-            castSection().vertical(.s9)
+            .horizontal(.s6)
         }
-        .horizontal(.s6)
-        .scrollify()
+        .introspect(.scrollView, on: .iOS(.v16)) { sv in
+            sv.delegate = delegate
+        }
         .background(background.fullScreen())
         .task { await getTrailerURL() }
         .onDisappear { setTabVideoURL(nil) }
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                if favorites.contains(props.id) {
+                    HeartButton()
+                        .onTap { toggleFavorite() }
+                }
+            }
+        }
+        .onChange(of: progress) { newValue in
+            if newValue >= 1 {
+                favorites.toggle(props)
+            }
+        }
+    }
+    
+    struct HeartButton: Component, TapInjectable {
+        @State var isPressed = false
+        var _onTap = {}
+        var body: some View {
+            Image(systemName: isPressed ? "heart.slash.fill" : "heart.fill")
+                .foregroundColor(.red)
+                .onTap(perform: _onTap)
+                .buttonStyle(Style(onPress: onPress))
+                .animation(.spring(), value: isPressed)
+        }
+        
+        func onPress(_ b: Bool) {isPressed = b}
+                
+        struct Style: ButtonStyle {
+            let onPress: (Bool) -> Void
+            func makeBody(configuration: Configuration) -> some View {
+                configuration.label
+                    .onChange(of: configuration.isPressed, perform: onPress)
+            }
+        }
+    }
+    
+    func handleScroll(_ offset: CGFloat) {
+        let threshold: Double = -100
+        progress = min(offset / threshold, 1)
     }
     
     
     func toggleFavorite() {
-        if favorites.contains(props.id.stringValue) {
+        if favorites.contains(props.id) {
             favorites.delete(props)
         } else {
             favorites.add(props)
         }
     }
-
+    
     func getTrailerURL() async {
-        let url = TMDb.videos(id: props.id.intValue)
+        let url = TMDb.videos(id: props.id)
         if let (data, _) = try? await fetchData(url: url) {
             let first = try? JSON(data: data).results.array.first
-            if let key = first?.key.stringValue {
+            if let key = first?.key.string {
                 setTabVideoURL(youtubeURL(key: key))
             }
         }
@@ -54,23 +163,25 @@ struct Movie: View, NetworkGetter {
     }
     
     func castSection() -> some View {
-        AsyncJSON(url: TMDb.credits(id: props.id.intValue)) { json in
+        AsyncJSON(url: TMDb.credits(id: props.id)) { json in
             Cast(props: json.cast).horizontal(-.s6)
         }
     }
 }
 
-
 // MARK: - Header
 extension Movie {
-    struct Header: View {
-        let id: Int
-        let title: String
-        let voteAverage: Double
-        let posterURL: URL?
-        let trailerURL: URL?
-        var isFavorite: Bool = false
-        var toggleFavorite: () -> Void = {}
+    struct Header: Component {
+        var props = JSON()
+        var id: Int {props.id}
+        var title: String {props.title}
+        var voteAverage: Double {props.vote_average}
+        var posterURL: URL? { props.poster_path.string?.tmdbImageURL }
+        var isFavorite = false
+        var isRated = false
+        var toggleFavorite = {}
+        var rate = {}
+        var clearRate = {}
         @Environment(\.theme) var theme: Theme
         
         var ratingStars: String { voteAverage.makeRatingStars() }
@@ -79,13 +190,46 @@ extension Movie {
             voteAverage.reduceScale(to: 1).description
         }
         
+        var favoriteButtonLabel: String {
+            isFavorite ? "Remove from Favorites" : "Add to Favorites"
+        }
+        
+        var favoriteButtonImage: String {
+            isFavorite ? "heart.slash" : "heart"
+        }
+        
+        var rateButtonLabel: String {
+            isRated ? "Update rate" : "Rate movie"
+        }
+        
+        
         var body: some View {
             
             VStack {
                 
                 posterView
-                    .onTapScaleDown()
-                    .overlay(actions, alignment: .trailing)
+                //                    .onTapScaleDown()
+                    .contextMenu {
+                        Button {
+                            toggleFavorite()
+                        } label: {
+                            Label(favoriteButtonLabel, systemImage: favoriteButtonImage)
+                        }
+                        
+                        Button {
+                            rate()
+                        } label: {
+                            Label(rateButtonLabel, systemImage: "star")
+                        }
+                        
+                        if isRated {
+                            Button {
+                                clearRate()
+                            } label: {
+                                Label("Clear rate", systemImage: "star.slash")
+                            }
+                        }
+                    }
                     .top(.s4)
                 
                 Text(title)
@@ -103,6 +247,8 @@ extension Movie {
                 Text(ratingStars)
                     .foregroundColor(Color.orange)
                     .top(.s3)
+                    .onTap {}
+                    .buttonStyle(ScaleDownButtonStyle())
             }
         }
         
@@ -112,8 +258,8 @@ extension Movie {
                     .opacity(isFavorite ? 1 : 0.3)
                     .onTap { toggleFavorite() }
                     .buttonStyle(ScaleDownButtonStyle())
-                .foregroundColor(isFavorite ? .red600 : theme.textPrimary)
-                .animation(.easeInOut, value: isFavorite)
+                    .foregroundColor(isFavorite ? .red600 : theme.textPrimary)
+                    .animation(.easeInOut, value: isFavorite)
                 Image(systemName: "star.fill").opacity(0.3)
                     .onTap { }
                     .buttonStyle(ScaleDownButtonStyle())
@@ -141,14 +287,14 @@ private extension Movie.Header {
 
 
 extension Movie.Header {
-    init(props: JSON) {
-        id = props.id.intValue
-        title = props.title.stringValue
-        voteAverage = props.vote_average.doubleValue
-        posterURL = props.poster_path.string?.tmdbImageURL
-        trailerURL = nil//props.trailerURL.url?
-        isFavorite = false
-    }
+//    init(props: JSON) {
+//        id = props.id
+//        title = props.title
+//        voteAverage = props.vote_average
+//        posterURL = props.poster_path.string?.tmdbImageURL
+//        trailerURL = nil//props.trailerURL.url?
+//        isFavorite = false
+//    }
 }
 
 // MARK: - InfoStack
@@ -157,15 +303,15 @@ extension Movie {
         let props: JSON
         
         var duration: String {
-            guard props.runtime.intValue > 0 else {
+            guard props.runtime > 0 else {
                 return "N/A"
             }
             
-            return durationFormatter.string(from: TimeInterval(props.runtime.intValue) * 60) ?? "N/A"
+            return durationFormatter.string(from: props.runtime * 60) ?? "N/A"
         }
         
         var year: String {
-            guard let releaseDate = dateFormatter.date(from: props.release_date.stringValue) else {
+            guard let releaseDate = dateFormatter.date(from: props.release_date) else {
                 return "N/A"
             }
             return yearFormatter.string(from: releaseDate)
@@ -241,8 +387,8 @@ extension Movie {
                     .font(.system(.headline, design: .rounded))
                     .fontWeight(.heavy)
                     .foregroundColor(theme.textPrimary)
-
-                Text(props.overview.stringValue)
+                
+                Text(props.overview)
                     .font(.system(.footnote, design: .rounded))
                     .fontWeight(.bold)
                     .foregroundColor(theme.textSecondary)
@@ -252,21 +398,6 @@ extension Movie {
     }
 }
 
-struct MovieCast: Decodable, Identifiable, Equatable {
-    let id: Int
-    let name: String
-    let profile_path: String?
-    let credit_id: String?
-    
-    var profileURL: URL? {
-        guard let profilePath = profile_path else { return nil }
-        return URL(string: "https://image.tmdb.org/t/p/w500\(profilePath)")
-    }
-}
-
-struct CastResponse: Decodable {
-    let cast: [MovieCast]
-}
 // MARK: - Cast
 extension Movie {
     struct Cast: View {
@@ -285,8 +416,8 @@ extension Movie {
                 
                 Carousel(model: props, spacing: .s2) { item in
                     ActorAvatar(
-                        path: item.profile_path.stringValue,
-                        id: item.credit_id.string ?? ""
+                        path: item.profile_path,
+                        id: item.credit_id
                     )
                     .onTapScaleDown()
                     .leading(item.id == props.first?.id ? .s6 : 0)
@@ -362,7 +493,7 @@ extension Movie {
 extension Movie.Background {
     struct WhiteGradient: View {
         @Environment(\.theme) var theme: Theme
-
+        
         var body: some View {
             LinearGradient(
                 gradient: theme.secondGradient,
@@ -403,4 +534,3 @@ fileprivate extension Double {
         return originalDecimal
     }
 }
-

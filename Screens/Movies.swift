@@ -52,7 +52,7 @@ struct Movies: View, NetworkGetter {
     }
     
     func loadMoreIfNeeded(_ data: [JSON], movie: JSON) async {
-        if movie.id.string == data.last?.id.string {
+        if movie.id == data.last?.id {
             page += 1
             await loadData()
         }
@@ -132,8 +132,8 @@ extension Movies.List {
 
 extension Movies.List.Cell {
     init(props: JSON)  {
-        title = props.title.stringValue
+        title = props.title
         posterURL = props.poster_path.string?.tmdbImageURL
-        overview = props.overview.stringValue
+        overview = props.overview
     }
 }

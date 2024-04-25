@@ -1,10 +1,8 @@
 //
 //  _jsonCodable.swift
-//  Movies
 //
 //  Created by Cristian Felipe Patiño Rojas on 16/04/2024.
 //
-// @todo: add github link of original repo where I took this
 import Foundation
 
 @dynamicMemberLookup
@@ -19,7 +17,14 @@ public enum JSON {
 
 // MARK: - Codable
 extension JSON: Codable {
-
+    
+    static let decoder = JSONDecoder()
+    static let encoder = JSONEncoder()
+    
+    func encode() throws -> Data {
+        try Self.encoder.encode(self)
+    }
+    
     public init(from decoder: Decoder) throws {
         if let container = try? decoder.container(keyedBy: JSONCodingKeys.self) {
             self = JSON(from: container)
@@ -29,27 +34,27 @@ extension JSON: Codable {
             throw DecodingError.dataCorrupted(DecodingError.Context(codingPath: [], debugDescription: ""))
         }
     }
-
+    
     public func encode(to encoder: Encoder) throws {
         var singleValueContainer = encoder.singleValueContainer()
         switch self {
         case .null: return
         case .bool(let bool):
             try singleValueContainer.encode(bool)
-
+            
         case .number(let double):
             try singleValueContainer.encode(double)
-
+            
         case .string(let str):
             try singleValueContainer.encode(str)
-
+            
         case .array(let array):
             var unkeyedContainer = encoder.unkeyedContainer()
             try unkeyedContainer.encode(contentsOf: array)
-
+            
         case .dict(let dict):
             var container = encoder.container(keyedBy: JSONCodingKeys.self)
-
+            
             for key in dict.keys {
                 let codingKey = JSONCodingKeys(stringValue: key)!
                 guard let json = dict[key] else {
@@ -57,28 +62,28 @@ extension JSON: Codable {
                     try container.encodeNil(forKey: codingKey)
                     continue
                 }
-
+                
                 switch json {
                 case .null: return
                 case .bool(let bool):
                     try container.encode(bool, forKey: codingKey)
-
+                    
                 case .number(let number):
                     try container.encode(number, forKey: codingKey)
-
+                    
                 case .string(let str):
                     try container.encode(str, forKey: codingKey)
-
+                    
                 case .array(let jsonArray):
                     try container.encode(jsonArray, forKey: codingKey)
-
+                    
                 case .dict(let jsonDict):
                     try container.encode(jsonDict, forKey: codingKey)
                 }
             }
         }
     }
-
+    
     internal init(from container: KeyedDecodingContainer<JSONCodingKeys>) {
         var dict: [String: JSON] = [:]
         for key in container.allKeys {
@@ -96,7 +101,7 @@ extension JSON: Codable {
         }
         self = .dict(dict)
     }
-
+    
     internal init(from container: UnkeyedDecodingContainer) {
         var container = container
         var arr: [JSON] = []
@@ -117,37 +122,6 @@ extension JSON: Codable {
     }
 }
 
-// MARK: Array and Dictionary lookup.
-extension JSON {
-    public subscript(dynamicMember member: String) -> Self {
-        guard case .dict(let jsonDictionary) = self else { return .null }
-        return jsonDictionary[member] ?? .null
-    }
-    
-    // had to comment this as I'm having some inteference on lists
-//    public subscript(dynamicMember member: String) -> [Self]? {
-//        guard case .array(let array) = self else { return nil }
-//        return array
-//    }
-//    public subscript(dynamicMember member: String) -> String? {
-//        guard case .string(let str) = self else { return nil }
-//        return str
-//    }
-//    public subscript(dynamicMember member: String) -> Bool? {
-//        guard case .bool(let bool) = self else { return nil }
-//        return bool
-//    }
-//    public subscript(dynamicMember member: String) -> Double? {
-//        guard case .number(let double) = self else { return nil }
-//        return double
-//    }
-//
-//    public subscript(dynamicMember member: String) -> Int {
-//        guard case .number(let double) = self else { return 0 }
-//        return Int(double)
-//    }
-}
-
 // MARK: Suscripts
 extension JSON {
     public subscript(index: Int) -> Self? {
@@ -156,14 +130,41 @@ extension JSON {
     }
     
     public subscript(key: String) -> Self {
-        guard case .dict(let dict) = self else { return .null }
-        return dict[key] ?? .null
+        get {
+            guard case .dict(let dict) = self else { return .null }
+            return dict[key] ?? .null
+        }
+        set {
+            switch self {
+            case .dict(var d):
+                if case .null = newValue {
+                    d[key] = nil
+                } else {
+                    d[key] = newValue
+                }
+                self = .dict(d)
+            default: break
+            }
+        }
     }
 }
 
 // MARK: - Inits
 extension JSON {
-    static let decoder = JSONDecoder()
+    public init() { self = .dict() }
+    
+    /// JSON instantiation using sugar syntax: `JSON { $0.prop = "value" }`
+    /// ```
+    /// var json = JSON { object in
+    ///      object.firstName = "John"
+    ///      object.lastNae   = "Doe"
+    /// }
+    /// ```
+    public init(_ transform: (inout JSON) -> Void) {
+        var copy = JSON()
+        transform(&copy)
+        self = copy
+    }
     
     init(data: Data, decoder: JSONDecoder = decoder) throws {
         self = try decoder.decode(Self.self, from: data)
@@ -190,13 +191,6 @@ extension JSON {
     }
 }
 
-extension JSON {
-    static let encoder = JSONEncoder()
-    func encode() throws -> Data {
-        try Self.encoder.encode(self)
-    }
-}
-
 // MARK: Convenience accessors for better type inference.
 extension JSON {
     
@@ -204,7 +198,7 @@ extension JSON {
         guard case .array(let array) = self else { return [] }
         return array
     }
-
+    
     public var dict: [String: JSON] {
         guard case .dict(let jsonDictionary) = self else { return [:] }
         return jsonDictionary
@@ -233,15 +227,14 @@ extension JSON {
         }
         return nil
     }
-
+    
     public var double: Double? {
         number?.doubleValue
     }
-
+    
     public var int: Int? {
         number?.intValue
     }
-    
     
     public var bool: Bool? {
         if case .bool(let value) = self {
@@ -249,15 +242,14 @@ extension JSON {
         } else if let value = self.number?.boolValue {
             return value
         } else if case .string(let value) = self,
-            (["true", "t", "yes", "y", "1"].contains { value.caseInsensitiveCompare($0) == .orderedSame }) {
+                  (["true", "t", "yes", "y", "1"].contains { value.caseInsensitiveCompare($0) == .orderedSame }) {
             return true
         } else if case .string(let value) = self,
-            (["false", "f", "no", "n", "0"].contains { value.caseInsensitiveCompare($0) == .orderedSame }) {
+                  (["false", "f", "no", "n", "0"].contains { value.caseInsensitiveCompare($0) == .orderedSame }) {
             return false
         }
         return nil
     }
-
     
     // Defaults
     public var stringValue: String { string ?? "" }
@@ -267,14 +259,9 @@ extension JSON {
 }
 
 
-
 // MARK: - Conformances
 extension JSON: Equatable {}
 extension JSON: Hashable {}
-extension JSON: Identifiable {
-    public var id: Self { self["id"] ?? .null }
-}
-
 extension JSON: Comparable {
     public static func < (lhs: Self, rhs: Self) -> Bool {
         switch (lhs, rhs) {
@@ -295,6 +282,13 @@ extension JSON: Comparable {
 
 
 // MARK: - Literals
+/// Literals conformance so we can instantiate a JSON from primitive types
+/// ```
+/// var string: JSON = "value" // .string("value")
+/// var int   : JSON = 0       // .number(0)
+/// var bool  : JSON = true    // .bool(true)
+/// var double: JSON = 30.0    // .number(30.0)
+/// ```
 extension JSON: ExpressibleByDictionaryLiteral {
     public init(dictionaryLiteral elements: (String, Any)...) {
         let dictionary = elements.reduce(into: [String: Any](), { $0[$1.0] = $1.1})
@@ -308,53 +302,86 @@ extension JSON: ExpressibleByArrayLiteral {
     }
 }
 
-//extension JSONCodable: ExpressibleByStringLiteral {
-//
-//    public init(stringLiteral value: StringLiteralType) {
-//        self.init(value)
-//    }
-//
-//    public init(extendedGraphemeClusterLiteral value: StringLiteralType) {
-//        self.init(value)
-//    }
-//
-//    public init(unicodeScalarLiteral value: StringLiteralType) {
-//        self.init(value)
-//    }
-//}
-//
-//extension JSONCodable: ExpressibleByFloatLiteral {
-//
-//    public init(floatLiteral value: FloatLiteralType) {
-//        self.init(value)
-//    }
-//}
-//
-//extension JSONCodable: ExpressibleByIntegerLiteral {
-//
-//    public init(integerLiteral value: IntegerLiteralType) {
-//        self.init(value)
-//    }
-//}
-//
-//extension JSONCodable: ExpressibleByBooleanLiteral {
-//
-//    public init(booleanLiteral value: BooleanLiteralType) {
-//        self.init(value)
-//    }
-//}
+extension JSON: ExpressibleByStringLiteral {
+    
+    public init(stringLiteral value: StringLiteralType) {
+        self = .string(value)
+    }
+    
+    public init(extendedGraphemeClusterLiteral value: StringLiteralType) {
+        self = .string(value)
+    }
+    
+    public init(unicodeScalarLiteral value: StringLiteralType) {
+        self = .string(value)
+    }
+}
+
+extension JSON: ExpressibleByFloatLiteral {
+    public init(floatLiteral value: FloatLiteralType) {
+        self = .number(value)
+    }
+}
+
+extension JSON: ExpressibleByIntegerLiteral {
+    public init(integerLiteral value: IntegerLiteralType) {
+        self = .number(Double(value))
+    }
+}
+
+extension JSON: ExpressibleByBooleanLiteral {
+    public init(booleanLiteral value: BooleanLiteralType) {
+        self = .bool(value)
+    }
+}
+
+// MARK: - Dynamic lookup accessors
+extension JSON {
+    
+    // Dynamic subscript so we can use dot syntax to access properties
+    // `json.title =
+    public subscript(dynamicMember member: String) -> Self {
+        get { self[member] }
+        set { self[member] = newValue }
+    }
+    
+    @_disfavoredOverload
+    public subscript(dynamicMember member: String) -> [Self] {
+        self[member].array
+    }
+    
+    @_disfavoredOverload
+    public subscript(dynamicMember member: String) -> String {
+        self[member].stringValue
+    }
+    
+    @_disfavoredOverload
+    public subscript(dynamicMember member: String) -> Bool {
+        self[member].boolValue
+    }
+    
+    @_disfavoredOverload
+    public subscript(dynamicMember member: String) -> Double {
+        self[member].doubleValue
+    }
+    
+    @_disfavoredOverload
+    public subscript(dynamicMember member: String) -> Int {
+        self[member].intValue
+    }
+}
 
 
 // MARK: - Coding keys
 internal struct JSONCodingKeys: CodingKey {
     internal var stringValue: String
-
+    
     internal init?(stringValue: String) {
         self.stringValue = stringValue
     }
-
+    
     internal var intValue: Int?
-
+    
     internal init?(intValue: Int) {
         self.init(stringValue: "\(intValue)")
         self.intValue = intValue
@@ -362,14 +389,64 @@ internal struct JSONCodingKeys: CodingKey {
 }
 
 // MARK: - Pretty Print
+extension JSON: CustomStringConvertible, CustomDebugStringConvertible {
+    public var object: Any {
+        get {
+            switch self {
+            case .dict(let value): return value.mapValues { $0.object }
+            case .array(let value): return value.map { $0.object }
+            case .string(let value): return value
+            case .number(let value): return value
+            case .bool(let value): return value
+            case .null: return NSNull()
+            }
+        }
+    }
+    
+    public var description: String {
+        return String(describing: self.object as AnyObject).replacingOccurrences(of: ";\n", with: "\n")
+    }
+    
+    public var debugDescription: String {
+        return description
+    }
+}
 
-//extension JSON: CustomStringConvertible, CustomDebugStringConvertible {
-//
-//    public var description: String {
-//        return String(describing: self.object as AnyObject).replacingOccurrences(of: ";\n", with: "\n")
-//    }
-//
-//    public var debugDescription: String {
-//        return description
-//    }
-//}
+/// Protocol so we can instantiate objects whose value is stored in a reference:
+///  ```
+///  func person(id: Int, name: String, age: Int) -> JSON {
+///      JSON { json in
+///          json.id = id.json()
+///          json.name = name.json()
+///          json.age = age.json()
+///      }
+///  }
+///  ```
+protocol JSONConvertible {
+    func json() -> JSON
+}
+
+
+extension String: JSONConvertible {
+    func json() -> JSON {
+        .string(self)
+    }
+}
+
+extension Int: JSONConvertible {
+    func json() -> JSON {
+        .number(Double(self))
+    }
+}
+
+extension Double: JSONConvertible {
+    func json() -> JSON {
+        .number(self)
+    }
+}
+
+extension Bool: JSONConvertible {
+    func json() -> JSON {
+        .bool(self)
+    }
+}

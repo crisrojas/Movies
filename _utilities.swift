@@ -7,6 +7,29 @@
 
 import Foundation
 
+protocol Initiable {init()}
+extension Initiable {
+    init(transform: (inout Self) -> Void) {
+        var copy = Self.init()
+        transform(&copy)
+        self = copy
+    }
+}
+
+import SwiftUI
+protocol Component: SwiftUI.View, Initiable {}
+protocol TapInjectable {
+    var _onTap: () -> Void {get set}
+}
+
+extension TapInjectable {
+    func onTap(cls: @escaping () -> Void) -> Self {
+        var copy = self
+        copy._onTap = cls
+        return copy
+    }
+}
+
 func youtubeURL(key: String) -> URL? {
     URL(string: "https://youtube.com/watch?v=\(key)")
 }

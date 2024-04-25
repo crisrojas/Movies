@@ -35,6 +35,15 @@ enum Tab: String, CaseIterable {
         default: self.rawValue
         }
     }
+    
+    var tabItem: some View {
+        screen
+            .navigationify()
+            .tabItem {
+                Label(rawValue, systemImage: systemName)
+            }
+            .tag(self)
+    }
 }
 
 struct Tabbar: View {
@@ -54,12 +63,7 @@ struct Tabbar: View {
     var tabs: some View {
         TabView(selection: $states.selectedTab) {
             ForEach(Tab.allCases, id: \.self) { tab in
-                tab.screen
-                    .navigationify()
-                    .tabItem {
-                        Label(tab.rawValue, systemImage: tab.systemName)
-                    }
-                    .tag(tab)
+                tab.tabItem
             }
         }
     }
